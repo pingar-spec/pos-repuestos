@@ -15,7 +15,7 @@ public class App {
         CajaDAO cajaDAO = new CajaDAO();
 
         Javalin app = Javalin.create(config -> {
-            config.staticFiles.add("public", Location.EXTERNAL);
+      config.staticFiles.add("/public", Location.CLASSPATH);
             config.plugins.enableCors(cors -> {
                 cors.add(it -> it.anyHost());
             });
