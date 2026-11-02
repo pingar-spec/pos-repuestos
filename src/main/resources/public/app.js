@@ -26,11 +26,11 @@ function cambiarVista(vistaId, tituloSeccion, elementoBoton) {
   if (elementoBoton) elementoBoton.classList.add('active');
 }
 
-// Cargar catálogo conectando directamente al backend en Java
+// Cargar catálogo conectando directamente al backend en Java / TiDB Cloud
 async function cargarProductosDesdeBackend() {
   const grid = document.getElementById('grid-productos');
   if (grid) {
-    grid.innerHTML = '<div style="color: var(--text-muted); padding: 30px; grid-column: 1/-1; text-align: center;">Cargando repuestos desde la base de datos...</div>';
+    grid.innerHTML = '<div style="color: var(--text-muted); padding: 30px; grid-column: 1/-1; text-align: center;">Cargando repuestos desde TiDB Cloud...</div>';
   }
 
   try {
@@ -41,14 +41,15 @@ async function cargarProductosDesdeBackend() {
 
     const datos = await respuesta.json();
     
-    // Mapeo riguroso de atributos recibidos del backend Java/TiDB Cloud
+    // Mapeo exacto con los nombres que devuelve tu Backend Java (TiDB)
     catalogoProductos = datos.map(p => ({
-      id: p.id,
+      id: p.idProducto || p.id,
       nombre: p.nombre || 'Repuesto sin nombre',
-      oem: p.codigoOem ? `OEM: ${p.codigoOem}` : (p.codigo ? `OEM: ${p.codigo}` : 'OEM: N/A'),
+      medida: p.medida ? `Medida: ${p.medida}` : '',
+      oem: p.codigoOem ? `OEM: ${p.codigoOem}` : 'OEM: N/A',
       compatibilidad: p.compatibilidad || 'Universal',
-      categoria: p.categoria || 'General',
-      precio: parseFloat(p.precio) || 0.0,
+      categoria: p.categoria && p.categoria.trim() !== '' ? p.categoria : 'General',
+      precio: parseFloat(p.precioVenta !== undefined ? p.precioVenta : (p.precio || 0.0)),
       stock: p.stock !== undefined ? parseInt(p.stock) : 0,
       tipoIcono: asignarIconoSegunTexto(p.nombre)
     }));
@@ -87,7 +88,7 @@ function renderizarCatalogo(lista) {
   grid.innerHTML = '';
 
   if (lista.length === 0) {
-    grid.innerHTML = '<div style="color: var(--text-muted); padding: 30px; grid-column: 1/-1; text-align: center;">No hay repuestos registrados en este criterio.</div>';
+    grid.innerHTML = '<div style="color: var(--text-muted); padding: 30px; grid-column: 1/-1; text-align: center;">No hay repuestos registrados con este criterio.</div>';
     return;
   }
 
@@ -111,7 +112,7 @@ function renderizarCatalogo(lista) {
       </div>
       <div class="product-title">${producto.nombre}</div>
       <div class="product-oem">${producto.oem}</div>
-      <div class="product-compat">${producto.compatibilidad}</div>
+      <div class="product-compat">${producto.medida || producto.compatibilidad}</div>
       <div class="product-price">S/. ${producto.precio.toFixed(2)}</div>
     `;
     grid.appendChild(card);
@@ -154,7 +155,8 @@ function aplicarFiltros() {
   const filtrados = catalogoProductos.filter(p => {
     const coincideTexto = p.nombre.toLowerCase().includes(texto) ||
                           p.oem.toLowerCase().includes(texto) ||
-                          p.compatibilidad.toLowerCase().includes(texto);
+                          p.compatibilidad.toLowerCase().includes(texto) ||
+                          p.medida.toLowerCase().includes(texto);
     const coincideCategoria = (categoriaFiltroActiva === 'TODOS') || 
                               (p.categoria.toLowerCase() === categoriaFiltroActiva.toLowerCase());
     return coincideTexto && coincideCategoria;
@@ -177,7 +179,7 @@ function agregarAlCarrito(productoId) {
   const itemExistente = carrito.find(item => item.id === productoId);
   if (itemExistente) {
     if (itemExistente.cantidad >= producto.stock) {
-      alert(`No puedes agregar más unidades. El stock máximo es ${producto.stock}.`);
+      alert(`No puedes agregar más unidades. El stock máximo disponible es ${producto.stock}.`);
       return;
     }
     itemExistente.cantidad++;
@@ -234,9 +236,9 @@ function actualizarVistaCarrito() {
       <div style="flex: 1;">
         <div class="cart-item-name">${item.nombre}</div>
         <div class="cart-item-qty">
-          <button style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0 6px; border-radius:3px; cursor:pointer;" onclick="modificarCantidad(${item.id}, -1)">-</button>
+          <button type="button" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0 6px; border-radius:3px; cursor:pointer;" onclick="modificarCantidad(${item.id}, -1)">-</button>
           <span style="margin: 0 6px; font-weight:700;">${item.cantidad}</span>
-          <button style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0 6px; border-radius:3px; cursor:pointer;" onclick="modificarCantidad(${item.id}, 1)">+</button>
+          <button type="button" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0 6px; border-radius:3px; cursor:pointer;" onclick="modificarCantidad(${item.id}, 1)">+</button>
           <span style="margin-left: 8px;">x S/. ${item.precio.toFixed(2)}</span>
         </div>
       </div>
