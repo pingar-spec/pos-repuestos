@@ -2,21 +2,27 @@
    VARIABLES DE COLOR Y BASE VISUAL PROFESIONAL
    =================================================== */
 :root {
-  --bg-main: #0b1120;        /* Fondo oscuro base */
-  --bg-surface: #0f172a;     /* Fondo de paneles y menú lateral */
-  --bg-card: #1e293b;        /* Fondo de tarjetas y bloques */
-  --border-color: #334155;   /* Bordes sutiles de separación */
-  --text-main: #f8fafc;      /* Texto principal blanco */
-  --text-muted: #94a3b8;     /* Texto secundario gris */
-  --accent-green: #10b981;   /* Verde esmeralda para cobro y éxito */
-  --accent-blue: #3b82f6;    /* Azul para módulos activos */
+  --bg-main: #070d18;
+  --bg-surface: #0f172a;
+  --bg-card: #182234;
+  --bg-card-hover: #1f2d45;
+  --bg-input: #0b1322;
+  --border-color: #27354a;
+  --border-highlight: #3b82f6;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-green: #10b981;
+  --accent-green-hover: #059669;
+  --accent-blue: #3b82f6;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -34,7 +40,7 @@ body {
 }
 
 /* ===================================================
-   MENÚ LATERAL (SIDEBAR COMERCIAL)
+   SIDEBAR (MENÚ LATERAL)
    =================================================== */
 .sidebar {
   width: 250px;
@@ -64,13 +70,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  color: #ffffff;
+  flex-shrink: 0;
 }
 
 .brand-name {
   font-size: 14px;
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .brand-sub {
@@ -79,7 +85,7 @@ body {
 }
 
 .user-badge {
-  background-color: var(--bg-card);
+  background-color: #162032;
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 11px;
@@ -120,7 +126,7 @@ body {
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .menu-item:hover {
@@ -135,7 +141,7 @@ body {
 }
 
 /* ===================================================
-   ÁREA DE CONTENIDO Y APARTADOS INDEPENDIENTES
+   ÁREA DE CONTENIDO Y CABECERA
    =================================================== */
 .main-content {
   flex: 1;
@@ -152,6 +158,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+  flex-shrink: 0;
 }
 
 .header-title-box {
@@ -176,13 +183,13 @@ body {
 
 .view-container {
   flex: 1;
-  padding: 24px;
-  overflow-y: auto;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Control para mostrar solo un apartado a la vez */
 .app-view {
   display: none;
+  height: 100%;
 }
 
 .app-view.active-view {
@@ -190,10 +197,351 @@ body {
 }
 
 .placeholder-card {
+  margin: 24px;
   background: var(--bg-surface);
   border: 1px dashed var(--border-color);
   border-radius: 8px;
   padding: 40px;
   text-align: center;
   color: var(--text-muted);
+}
+
+/* ===================================================
+   MÓDULO: VENTA RÁPIDA (DISEÑO A 2 COLUMNAS)
+   =================================================== */
+.pos-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+/* COLUMNA CENTRAL: CATÁLOGO Y BUSCADORES */
+.pos-catalog-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: var(--accent-blue);
+}
+
+.category-pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pill-btn {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pill-btn:hover {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+}
+
+.pill-btn.active {
+  background-color: var(--bg-card);
+  border-color: var(--border-highlight);
+  color: var(--text-main);
+}
+
+/* GRILLA DE PRODUCTOS */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.product-card:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.product-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.badge-green {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+}
+
+.badge-amber {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+}
+
+.badge-red {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red);
+}
+
+.product-img-box {
+  height: 95px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+
+.product-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.product-oem {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.product-compat {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.product-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: auto;
+}
+
+/* ===================================================
+   COLUMNA DERECHA: PANEL DE COMPROBANTE SUNAT
+   =================================================== */
+.pos-billing-column {
+  width: 360px;
+  background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+.billing-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.doc-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.doc-btn {
+  flex: 1;
+  padding: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.doc-btn.active {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #ffffff;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.input-with-action {
+  display: flex;
+  gap: 6px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 8px 10px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 12px;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--accent-blue);
+}
+
+.btn-validate {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  padding: 0 14px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-validate:hover {
+  background-color: var(--accent-green);
+  color: #ffffff;
+}
+
+.quick-client-link {
+  font-size: 11px;
+  color: var(--accent-blue);
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+/* LISTA DE ITEMS EN EL COMPROBANTE */
+.cart-items-box {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 0;
+  margin: 10px 0;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #1e293b;
+  font-size: 12px;
+}
+
+.cart-item-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.cart-item-qty {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.cart-item-price {
+  font-weight: 700;
+}
+
+/* TOTALES TRIBUTARIOS */
+.tax-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tax-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tax-total {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  padding-top: 4px;
+  border-top: 1px dashed var(--border-color);
+}
+
+/* BOTÓN DE ACCIÓN COBRAR */
+.btn-checkout {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-green);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-checkout:hover {
+  background: var(--accent-green-hover);
 }
