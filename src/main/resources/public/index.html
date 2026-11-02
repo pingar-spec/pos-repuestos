@@ -201,14 +201,12 @@
 
       <div class="view-container">
 
-        <!-- 1. APARTADO: VENTA RÁPIDA (DINÁMICO) -->
+        <!-- 1. VENTA RÁPIDA (POS) -->
         <section id="vista-pos" class="app-view active-view">
           <div class="pos-layout">
             
             <!-- COLUMNA CENTRAL: CATÁLOGO Y BUSCADORES -->
             <div class="pos-catalog-column">
-              
-              <!-- Buscador -->
               <div class="search-box">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
@@ -217,7 +215,6 @@
                 <input type="text" id="buscador-pos" class="search-input" placeholder="Buscar por nombre, OEM, código o aplicación..." oninput="filtrarRepuestos()">
               </div>
 
-              <!-- Pestañas de categorías -->
               <div class="category-pills">
                 <button class="pill-btn active" onclick="filtrarCategoria('TODOS', this)">Todos</button>
                 <button class="pill-btn" onclick="filtrarCategoria('Baterías', this)">Baterías</button>
@@ -226,27 +223,24 @@
                 <button class="pill-btn" onclick="filtrarCategoria('Abrazaderas', this)">Abrazaderas</button>
               </div>
 
-              <!-- Contenedor dinámico de productos -->
               <div class="product-grid" id="grid-productos">
-                <!-- Se llena automáticamente con app.js -->
+                <!-- Se llena dinámicamente con app.js -->
               </div>
             </div>
 
-            <!-- COLUMNA DERECHA: PANEL DE COMPROBANTE Y COBRO SUNAT -->
+            <!-- COLUMNA DERECHA: PANEL DE COMPROBANTE SUNAT -->
             <div class="pos-billing-column">
               <div class="billing-title">Billing & SUNAT</div>
 
-              <!-- Selector Boleta / Factura -->
               <div class="doc-selector">
                 <button type="button" id="btn-boleta" class="doc-btn active" onclick="seleccionarTipoDoc('BOLETA')">Boleta</button>
                 <button type="button" id="btn-factura" class="doc-btn" onclick="seleccionarTipoDoc('FACTURA')">Factura</button>
               </div>
 
-              <!-- Identificación -->
               <div class="form-group">
                 <label class="form-label" id="label-documento">DNI (8 dígitos)</label>
                 <div class="input-with-action">
-                  <input type="text" id="input-doc" class="input-field" placeholder="Número de documento">
+                  <input type="text" id="input-doc" class="input-field" placeholder="Número de documento" maxlength="8">
                   <button type="button" class="btn-validate" onclick="validarDocumento()">Validar</button>
                 </div>
               </div>
@@ -263,12 +257,10 @@
                 <input type="text" id="input-placa" class="input-field" placeholder="Ej: ABC-123">
               </div>
 
-              <!-- Lista de repuestos en el carrito -->
               <div class="cart-items-box" id="carrito-items">
-                <!-- Se actualiza automáticamente con app.js -->
+                <!-- Se actualiza con app.js -->
               </div>
 
-              <!-- Desglose tributario SUNAT -->
               <div class="tax-breakdown">
                 <div class="tax-row">
                   <span>Subtotal</span>
@@ -284,22 +276,65 @@
                 </div>
               </div>
 
-              <!-- Botón cobrar -->
-              <button class="btn-checkout" onclick="procesarCobro()">COBRAR / EMITIR COMPROBANTE</button>
-
+              <button class="btn-checkout" onclick="abrirModalCobro()">COBRAR / EMITIR COMPROBANTE</button>
             </div>
 
           </div>
         </section>
 
-        <!-- SECCIONES RESTANTES EN ESPERA (MAQUETA MODULAR) -->
+        <!-- 2. VENTAS DEL DÍA (HISTORIAL & MÉTRICAS) -->
         <section id="vista-ventas-dia" class="app-view">
-          <div class="placeholder-card">
-            <h3>Historial de Ventas del Día</h3>
-            <p>Registro de tickets emitidos y reimpresión térmica.</p>
+          <div class="history-layout">
+            
+            <!-- Tarjetas de métricas -->
+            <div class="metrics-row">
+              <div class="metric-card">
+                <span class="metric-label">Total Facturado Hoy</span>
+                <span class="metric-value" id="metrica-total-dia">S/. 0.00</span>
+                <span class="metric-tag" id="metrica-cant-ventas">0 Ventas emitidas</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Cobrado en Efectivo</span>
+                <span class="metric-value" id="metrica-efectivo">S/. 0.00</span>
+                <span class="metric-tag">Caja mostrador</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Cobrado con Yape / Plin</span>
+                <span class="metric-value" id="metrica-digital">S/. 0.00</span>
+                <span class="metric-tag">Billeteras móviles</span>
+              </div>
+            </div>
+
+            <!-- Tabla de ventas emitidas -->
+            <div class="data-table-container">
+              <div class="table-toolbar">
+                <span class="table-title">Comprobantes Emitidos en la Jornada</span>
+                <span style="font-size: 11px; color: var(--text-muted);">Sincronizado con TiDB Cloud</span>
+              </div>
+              
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th>N° Comprobante</th>
+                    <th>Tipo</th>
+                    <th>Cliente / Razón Social</th>
+                    <th>Documento</th>
+                    <th>Método</th>
+                    <th>Total</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-ventas-body">
+                  <!-- Se llena con app.js -->
+                </tbody>
+              </table>
+            </div>
+
           </div>
         </section>
 
+        <!-- 3. COMPROBANTES SUNAT -->
         <section id="vista-sunat" class="app-view">
           <div class="placeholder-card">
             <h3>Bandeja Electrónica SUNAT</h3>
@@ -307,6 +342,7 @@
           </div>
         </section>
 
+        <!-- 4. COTIZACIONES -->
         <section id="vista-proformas" class="app-view">
           <div class="placeholder-card">
             <h3>Cotizaciones y Proformas para Talleres</h3>
@@ -314,6 +350,7 @@
           </div>
         </section>
 
+        <!-- 5. CLIENTES Y TALLERES -->
         <section id="vista-clientes" class="app-view">
           <div class="placeholder-card">
             <h3>Directorio de Clientes y Talleres</h3>
@@ -321,6 +358,7 @@
           </div>
         </section>
 
+        <!-- 6. CUENTAS POR COBRAR (FIADOS) -->
         <section id="vista-fiados" class="app-view">
           <div class="placeholder-card">
             <h3>Cuentas por Cobrar (Créditos a Talleres)</h3>
@@ -328,6 +366,7 @@
           </div>
         </section>
 
+        <!-- 7. CATÁLOGO DE REPUESTOS -->
         <section id="vista-repuestos" class="app-view">
           <div class="placeholder-card">
             <h3>Catálogo Maestro de Autopartes</h3>
@@ -335,6 +374,7 @@
           </div>
         </section>
 
+        <!-- 8. GARANTÍA DE BATERÍAS -->
         <section id="vista-garantias" class="app-view">
           <div class="placeholder-card">
             <h3>Módulo de Garantía de Baterías</h3>
@@ -342,6 +382,7 @@
           </div>
         </section>
 
+        <!-- 9. UBICACIÓN EN TIENDA -->
         <section id="vista-ubicacion" class="app-view">
           <div class="placeholder-card">
             <h3>Ubicación en Tienda (Pasillo / Estante / Gaveta)</h3>
@@ -349,6 +390,7 @@
           </div>
         </section>
 
+        <!-- 10. REPUESTOS POR AGOTARSE -->
         <section id="vista-por-agotarse" class="app-view">
           <div class="placeholder-card">
             <h3>Alertas de Reposición Urgente</h3>
@@ -356,6 +398,7 @@
           </div>
         </section>
 
+        <!-- 11. ENTRADA DE MERCADERÍA -->
         <section id="vista-compras" class="app-view">
           <div class="placeholder-card">
             <h3>Llegada de Mercadería</h3>
@@ -363,6 +406,7 @@
           </div>
         </section>
 
+        <!-- 12. MIS PROVEEDORES -->
         <section id="vista-proveedores" class="app-view">
           <div class="placeholder-card">
             <h3>Directorio de Proveedores y Distribuidores</h3>
@@ -370,6 +414,7 @@
           </div>
         </section>
 
+        <!-- 13. APERTURA Y CIERRE DE CAJA -->
         <section id="vista-caja-cierre" class="app-view">
           <div class="placeholder-card">
             <h3>Apertura y Cierre de Turno</h3>
@@ -377,6 +422,7 @@
           </div>
         </section>
 
+        <!-- 14. GASTOS EN CAJA -->
         <section id="vista-caja-gastos" class="app-view">
           <div class="placeholder-card">
             <h3>Salidas de Dinero de Caja</h3>
@@ -384,6 +430,7 @@
           </div>
         </section>
 
+        <!-- 15. GANANCIAS -->
         <section id="vista-ganancias" class="app-view">
           <div class="placeholder-card">
             <h3>Reporte de Utilidad y Rentabilidad</h3>
@@ -391,6 +438,7 @@
           </div>
         </section>
 
+        <!-- 16. LOS MÁS VENDIDOS -->
         <section id="vista-mas-vendidos" class="app-view">
           <div class="placeholder-card">
             <h3>Ranking de Rotación de Piezas</h3>
@@ -401,6 +449,71 @@
       </div>
     </main>
 
+  </div>
+
+  <!-- VENTANA MODAL FLOTANTE DE COBRO ÁGIL (EFECTIVO Y YAPE) -->
+  <div class="modal-overlay" id="modal-cobro">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Finalizar Cobro en Mostrador</div>
+        <button class="modal-close" onclick="cerrarModalCobro()">✕</button>
+      </div>
+
+      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+        Total a cobrar: <strong style="color: var(--accent-green); font-size: 18px;" id="modal-monto-total">S/. 0.00</strong>
+      </div>
+
+      <!-- Pestañas de método de pago -->
+      <div class="payment-tabs">
+        <button class="tab-btn active" id="tab-efectivo" onclick="seleccionarMetodoCobro('EFECTIVO')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          Efectivo
+        </button>
+        <button class="tab-btn yape" id="tab-yape" onclick="seleccionarMetodoCobro('YAPE')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Yape / Plin
+        </button>
+      </div>
+
+      <!-- Contenido 1: Efectivo -->
+      <div class="tab-content active" id="content-efectivo">
+        <div class="form-group">
+          <label class="form-label">Monto recibido (S/.)</label>
+          <input type="number" id="input-monto-recibido" class="input-field" placeholder="Ej: 50.00" step="0.50" oninput="calcularVuelto()">
+        </div>
+        
+        <div class="cash-change-box">
+          <span style="font-size: 13px; color: var(--text-muted);">Vuelto a entregar:</span>
+          <span style="font-size: 20px; font-weight: 800; color: var(--accent-amber);" id="txt-vuelto">S/. 0.00</span>
+        </div>
+
+        <button class="btn-confirm-cash" onclick="finalizarVenta('Efectivo')">EMITIR COMPROBANTE (EFECTIVO)</button>
+      </div>
+
+      <!-- Contenido 2: Yape / Plin -->
+      <div class="tab-content" id="content-yape">
+        <div style="background: rgba(139, 92, 246, 0.1); border: 1px dashed var(--accent-purple); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 14px;">
+          <p style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px;">PAGO DIGITAL YAPE / PLIN</p>
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">El cliente debe transferir al QR oficial del mostrador:</p>
+          <div style="font-size: 20px; font-weight: 800; color: var(--accent-purple);" id="yape-monto-cobrar">S/. 0.00</div>
+        </div>
+
+        <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 8px;">
+          Verifica la confirmación en el celular o el sonido de la app.
+        </p>
+
+        <button class="btn-confirm-yape" onclick="finalizarVenta('Yape')">CONFIRMAR PAGO YAPE (EMITIR)</button>
+      </div>
+
+    </div>
   </div>
 
   <script src="app.js"></script>

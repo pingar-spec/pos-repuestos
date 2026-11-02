@@ -215,7 +215,6 @@ body {
   width: 100%;
 }
 
-/* COLUMNA CENTRAL: CATÁLOGO Y BUSCADORES */
 .pos-catalog-column {
   flex: 1;
   display: flex;
@@ -286,7 +285,6 @@ body {
   color: var(--text-main);
 }
 
-/* GRILLA DE PRODUCTOS */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -371,9 +369,6 @@ body {
   margin-top: auto;
 }
 
-/* ===================================================
-   COLUMNA DERECHA: PANEL DE COMPROBANTE SUNAT
-   =================================================== */
 .pos-billing-column {
   width: 360px;
   background-color: var(--bg-surface);
@@ -471,7 +466,6 @@ body {
   margin-bottom: 10px;
 }
 
-/* LISTA DE ITEMS EN EL COMPROBANTE */
 .cart-items-box {
   flex: 1;
   overflow-y: auto;
@@ -504,7 +498,6 @@ body {
   font-weight: 700;
 }
 
-/* TOTALES TRIBUTARIOS */
 .tax-breakdown {
   display: flex;
   flex-direction: column;
@@ -527,7 +520,6 @@ body {
   border-top: 1px dashed var(--border-color);
 }
 
-/* BOTÓN DE ACCIÓN COBRAR */
 .btn-checkout {
   width: 100%;
   padding: 12px;
@@ -544,4 +536,138 @@ body {
 
 .btn-checkout:hover {
   background: var(--accent-green-hover);
+}
+
+/* ===================================================
+   MÓDULO: VENTAS DEL DÍA (HISTORIAL & MÉTRICAS)
+   =================================================== */
+.history-layout {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.metric-tag {
+  font-size: 11px;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.data-table-container {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-toolbar {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.data-table th {
+  background-color: #162032;
+  color: var(--text-muted);
+  padding: 12px 18px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.data-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.badge-doc {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.badge-doc.boleta {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-doc.factura {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.btn-action-table {
+  background-color: #1e293b;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-action-table:hover {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
 }

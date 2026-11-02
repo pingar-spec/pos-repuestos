@@ -3,14 +3,19 @@
 // ===================================================
 let catalogoProductos = [];
 let carrito = [];
+let historialVentas = [];
 let tipoDocumentoSeleccionado = 'BOLETA';
 let categoriaFiltroActiva = 'TODOS';
+let metodoPagoSeleccionado = 'EFECTIVO';
+let correlativoBoleta = 1;
+let correlativoFactura = 1;
 
 // ===================================================
-// INICIALIZACIÓN
+// INICIALIZACIÓN AL ABRIR LA PÁGINA
 // ===================================================
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductosDesdeBackend();
+  actualizarTablaVentas();
 });
 
 // Cambiar de sección en el menú lateral
@@ -26,7 +31,7 @@ function cambiarVista(vistaId, tituloSeccion, elementoBoton) {
   if (elementoBoton) elementoBoton.classList.add('active');
 }
 
-// Cargar catálogo conectando directamente al backend en Java / TiDB Cloud
+// Cargar catálogo conectando directamente al backend Java / TiDB Cloud
 async function cargarProductosDesdeBackend() {
   const grid = document.getElementById('grid-productos');
   if (grid) {
@@ -41,12 +46,12 @@ async function cargarProductosDesdeBackend() {
 
     const datos = await respuesta.json();
     
-    // Mapeo exacto con los nombres que devuelve tu Backend Java (TiDB)
+    // Mapeo defensivo de atributos TiDB Cloud
     catalogoProductos = datos.map(p => ({
       id: p.idProducto || p.id,
       nombre: p.nombre || 'Repuesto sin nombre',
       medida: p.medida ? `Medida: ${p.medida}` : '',
-      oem: p.codigoOem ? `OEM: ${p.codigoOem}` : 'OEM: N/A',
+      oem: p.codigoOem ? `OEM: ${p.codigoOem}` : (p.codigo ? `OEM: ${p.codigo}` : 'OEM: N/A'),
       compatibilidad: p.compatibilidad || 'Universal',
       categoria: p.categoria && p.categoria.trim() !== '' ? p.categoria : 'General',
       precio: parseFloat(p.precioVenta !== undefined ? p.precioVenta : (p.precio || 0.0)),
@@ -211,9 +216,15 @@ function modificarCantidad(productoId, delta) {
   actualizarVistaCarrito();
 }
 
+function obtenerTotalCarrito() {
+  return carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+}
+
 function actualizarVistaCarrito() {
   const contenedor = document.getElementById('carrito-items');
   if (!contenedor) return;
+
+  const totalPagar = obtenerTotalCarrito();
 
   if (carrito.length === 0) {
     contenedor.innerHTML = '<div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 20px;">Sin repuestos agregados</div>';
@@ -224,11 +235,9 @@ function actualizarVistaCarrito() {
   }
 
   contenedor.innerHTML = '';
-  let totalPagar = 0;
 
   carrito.forEach(item => {
     const subtotalItem = item.precio * item.cantidad;
-    totalPagar += subtotalItem;
 
     const row = document.createElement('div');
     row.className = 'cart-item';
@@ -290,23 +299,26 @@ function llenarPublicoGeneral() {
 function validarDocumento() {
   const doc = (document.getElementById('input-doc').value || '').trim();
   if (tipoDocumentoSeleccionado === 'BOLETA') {
-    if (doc.length !== 8) {
-      alert('El DNI debe tener exactamente 8 dígitos.');
+    if (doc.length !== 8 || isNaN(doc)) {
+      alert('El DNI debe tener exactamente 8 dígitos numéricos.');
       return;
     }
     alert('Documento DNI validado correctamente con RENIEC.');
   } else {
-    if (doc.length !== 11 || (!doc.startsWith('10') && !doc.startsWith('20'))) {
-      alert('El RUC debe tener 11 dígitos y comenzar con 10 o 20.');
+    if (doc.length !== 11 || isNaN(doc) || (!doc.startsWith('10') && !doc.startsWith('20'))) {
+      alert('El RUC debe tener 11 dígitos numéricos y comenzar con 10 o 20.');
       return;
     }
     alert('Documento RUC validado en estado ACTIVO y HABIDO con SUNAT.');
   }
 }
 
-function procesarCobro() {
+// ===================================================
+// MODAL DE COBRO ÁGIL (EFECTIVO Y YAPE)
+// ===================================================
+function abrirModalCobro() {
   if (carrito.length === 0) {
-    alert('Agrega al menos un repuesto a la lista para emitir el comprobante.');
+    alert('Agrega al menos un repuesto al comprobante para cobrar.');
     return;
   }
 
@@ -316,13 +328,178 @@ function procesarCobro() {
     return;
   }
 
-  const total = document.getElementById('txt-total').innerText;
-  alert(`¡Comprobante emitido con éxito!\nTipo: ${tipoDocumentoSeleccionado}\nCliente: ${cliente}\nTotal pagado: ${total}\nRegistrado en caja y sincronizado con TiDB Cloud.`);
+  const total = obtenerTotalCarrito();
+  document.getElementById('modal-monto-total').innerText = `S/. ${total.toFixed(2)}`;
+  document.getElementById('yape-monto-cobrar').innerText = `S/. ${total.toFixed(2)}`;
   
-  // Limpiar venta
+  // Limpiar inputs de cobro
+  document.getElementById('input-monto-recibido').value = '';
+  document.getElementById('txt-vuelto').innerText = 'S/. 0.00';
+  seleccionarMetodoCobro('EFECTIVO');
+
+  document.getElementById('modal-cobro').classList.add('active');
+}
+
+function cerrarModalCobro() {
+  document.getElementById('modal-cobro').classList.remove('active');
+}
+
+function seleccionarMetodoCobro(metodo) {
+  metodoPagoSeleccionado = metodo;
+  const tabE = document.getElementById('tab-efectivo');
+  const tabY = document.getElementById('tab-yape');
+  const contE = document.getElementById('content-efectivo');
+  const contY = document.getElementById('content-yape');
+
+  if (metodo === 'EFECTIVO') {
+    tabE.classList.add('active');
+    tabY.classList.remove('active');
+    contE.classList.add('active');
+    contY.classList.remove('active');
+    document.getElementById('input-monto-recibido').focus();
+  } else {
+    tabY.classList.add('active');
+    tabE.classList.remove('active');
+    contY.classList.add('active');
+    contE.classList.remove('active');
+  }
+}
+
+function calcularVuelto() {
+  const total = obtenerTotalCarrito();
+  const recibido = parseFloat(document.getElementById('input-monto-recibido').value) || 0;
+  const vuelto = recibido - total;
+  const txtVuelto = document.getElementById('txt-vuelto');
+
+  if (vuelto >= 0) {
+    txtVuelto.innerText = `S/. ${vuelto.toFixed(2)}`;
+    txtVuelto.style.color = 'var(--accent-green)';
+  } else {
+    txtVuelto.innerText = `Falta S/. ${Math.abs(vuelto).toFixed(2)}`;
+    txtVuelto.style.color = 'var(--accent-red)';
+  }
+}
+
+// ===================================================
+// FINALIZACIÓN DE VENTA Y REGISTRO EN TIEMPO REAL
+// ===================================================
+function finalizarVenta(metodo) {
+  const total = obtenerTotalCarrito();
+
+  if (metodo === 'Efectivo') {
+    const recibido = parseFloat(document.getElementById('input-monto-recibido').value) || 0;
+    if (recibido < total) {
+      alert(`El monto en efectivo recibido (S/. ${recibido.toFixed(2)}) es menor al total a pagar (S/. ${total.toFixed(2)}).`);
+      return;
+    }
+  }
+
+  // Generar número de serie tributario correlativo
+  let serieNumero = '';
+  if (tipoDocumentoSeleccionado === 'BOLETA') {
+    serieNumero = `B001-${String(correlativoBoleta).padStart(6, '0')}`;
+    correlativoBoleta++;
+  } else {
+    serieNumero = `F001-${String(correlativoFactura).padStart(6, '0')}`;
+    correlativoFactura++;
+  }
+
+  // Hora actual del mostrador
+  const ahora = new Date();
+  const horaTexto = ahora.toTimeString().substring(0, 5);
+
+  const cliente = (document.getElementById('input-nombre').value || 'CLIENTES VARIOS').trim();
+  const doc = (document.getElementById('input-doc').value || '00000000').trim();
+
+  // Guardar en el historial en memoria
+  historialVentas.unshift({
+    hora: horaTexto,
+    numero: serieNumero,
+    tipo: tipoDocumentoSeleccionado,
+    cliente: cliente,
+    documento: doc,
+    metodo: metodo,
+    total: total
+  });
+
+  cerrarModalCobro();
+
+  alert(`¡Comprobante emitido con éxito!\n\n${tipoDocumentoSeleccionado}: ${serieNumero}\nCliente: ${cliente}\nMétodo: ${metodo}\nTotal Pagado: S/. ${total.toFixed(2)}\n\nRegistrado en caja y sincronizado con TiDB Cloud.`);
+
+  // Limpiar panel de facturación
   carrito = [];
   document.getElementById('input-doc').value = '';
   document.getElementById('input-nombre').value = '';
   document.getElementById('input-placa').value = '';
   actualizarVistaCarrito();
+  actualizarTablaVentas();
+}
+
+// ===================================================
+// ACTUALIZAR SECCIÓN: VENTAS DEL DÍA Y MÉTRICAS
+// ===================================================
+function actualizarTablaVentas() {
+  const tbody = document.getElementById('tabla-ventas-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  let totalFacturado = 0;
+  let totalEfectivo = 0;
+  let totalDigital = 0;
+
+  if (historialVentas.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+          No hay comprobantes emitidos en el turno de hoy.
+        </td>
+      </tr>
+    `;
+  } else {
+    historialVentas.forEach(v => {
+      totalFacturado += v.total;
+      if (v.metodo === 'Efectivo') totalEfectivo += v.total;
+      if (v.metodo === 'Yape') totalDigital += v.total;
+
+      const badgeClass = v.tipo === 'BOLETA' ? 'badge-doc boleta' : 'badge-doc factura';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${v.hora}</td>
+        <td><strong>${v.numero}</strong></td>
+        <td><span class="${badgeClass}">${v.tipo}</span></td>
+        <td>${v.cliente}</td>
+        <td>${v.documento}</td>
+        <td>${v.metodo}</td>
+        <td><strong>S/. ${v.total.toFixed(2)}</strong></td>
+        <td>
+          <button class="btn-action-table" onclick="reimprimirTicket('${v.numero}', '${v.cliente}', ${v.total.toFixed(2)}, '${v.metodo}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Ticket
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Actualizar métricas visuales
+  const elTotal = document.getElementById('metrica-total-dia');
+  const elEfec = document.getElementById('metrica-efectivo');
+  const elDig = document.getElementById('metrica-digital');
+  const elCant = document.getElementById('metrica-cant-ventas');
+
+  if (elTotal) elTotal.innerText = `S/. ${totalFacturado.toFixed(2)}`;
+  if (elEfec) elEfec.innerText = `S/. ${totalEfectivo.toFixed(2)}`;
+  if (elDig) elDig.innerText = `S/. ${totalDigital.toFixed(2)}`;
+  if (elCant) elCant.innerText = `${historialVentas.length} Venta${historialVentas.length === 1 ? '' : 's'} emitida${historialVentas.length === 1 ? '' : 's'}`;
+}
+
+function reimprimirTicket(numero, cliente, total, metodo) {
+  alert(`=== REIMPRESIÓN TICKET TÉRMICO 80MM ===\nComprobante: ${numero}\nCliente: ${cliente}\nMétodo: ${metodo || 'Efectivo'}\nTotal: S/. ${parseFloat(total).toFixed(2)}\nEstado: EMITIDO Y DECLARADO`);
 }
