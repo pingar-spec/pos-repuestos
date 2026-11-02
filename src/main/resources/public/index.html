@@ -224,11 +224,11 @@
               </div>
 
               <div class="product-grid" id="grid-productos">
-                <!-- Se llena dinámicamente con app.js -->
+                <!-- Se llena con app.js -->
               </div>
             </div>
 
-            <!-- COLUMNA DERECHA: PANEL DE COMPROBANTE SUNAT -->
+            <!-- COLUMNA DERECHA: PANEL DE COMPROBANTE SUNAT Y PAGO DIRECTO -->
             <div class="pos-billing-column">
               <div class="billing-title">Billing & SUNAT</div>
 
@@ -258,9 +258,10 @@
               </div>
 
               <div class="cart-items-box" id="carrito-items">
-                <!-- Se actualiza con app.js -->
+                <!-- Se llena con app.js -->
               </div>
 
+              <!-- Desglose tributario SUNAT -->
               <div class="tax-breakdown">
                 <div class="tax-row">
                   <span>Subtotal</span>
@@ -276,7 +277,36 @@
                 </div>
               </div>
 
-              <button class="btn-checkout" onclick="abrirModalCobro()">COBRAR / EMITIR COMPROBANTE</button>
+              <!-- SELECCIÓN INTEGRADA DE MÉTODO DE PAGO EN MOSTRADOR -->
+              <div class="payment-method-box">
+                <div class="payment-tabs-inline">
+                  <button type="button" class="pay-btn active" id="btn-pay-efectivo" onclick="cambiarMetodoCobro('EFECTIVO')">Efectivo</button>
+                  <button type="button" class="pay-btn" id="btn-pay-yape" onclick="cambiarMetodoCobro('YAPE')">Yape / Plin</button>
+                </div>
+
+                <!-- Panel Efectivo: Vuelto automático -->
+                <div id="panel-efectivo" class="pay-panel active">
+                  <div class="form-group" style="margin-bottom: 6px;">
+                    <label class="form-label">Efectivo recibido (S/.)</label>
+                    <input type="number" id="input-efectivo-recibido" class="input-field" placeholder="Monto entregado" step="0.50" oninput="calcularVueltoDirecto()">
+                  </div>
+                  <div class="change-indicator">
+                    <span>Vuelto:</span>
+                    <strong id="txt-vuelto-directo">S/. 0.00</strong>
+                  </div>
+                </div>
+
+                <!-- Panel Yape: Confirmación rápida para hora punta -->
+                <div id="panel-yape" class="pay-panel">
+                  <div class="yape-notice">
+                    <span>Monto a recibir por QR:</span>
+                    <strong id="txt-yape-monto">S/. 0.00</strong>
+                    <small>Verifica el sonido o aviso en tu celular y confirma.</small>
+                  </div>
+                </div>
+              </div>
+
+              <button class="btn-checkout" onclick="procesarEmisionFinal()">COBRAR / EMITIR COMPROBANTE</button>
             </div>
 
           </div>
@@ -286,7 +316,6 @@
         <section id="vista-ventas-dia" class="app-view">
           <div class="history-layout">
             
-            <!-- Tarjetas de métricas -->
             <div class="metrics-row">
               <div class="metric-card">
                 <span class="metric-label">Total Facturado Hoy</span>
@@ -305,7 +334,6 @@
               </div>
             </div>
 
-            <!-- Tabla de ventas emitidas -->
             <div class="data-table-container">
               <div class="table-toolbar">
                 <span class="table-title">Comprobantes Emitidos en la Jornada</span>
@@ -449,71 +477,6 @@
       </div>
     </main>
 
-  </div>
-
-  <!-- VENTANA MODAL FLOTANTE DE COBRO ÁGIL (EFECTIVO Y YAPE) -->
-  <div class="modal-overlay" id="modal-cobro">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title">Finalizar Cobro en Mostrador</div>
-        <button class="modal-close" onclick="cerrarModalCobro()">✕</button>
-      </div>
-
-      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-        Total a cobrar: <strong style="color: var(--accent-green); font-size: 18px;" id="modal-monto-total">S/. 0.00</strong>
-      </div>
-
-      <!-- Pestañas de método de pago -->
-      <div class="payment-tabs">
-        <button class="tab-btn active" id="tab-efectivo" onclick="seleccionarMetodoCobro('EFECTIVO')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-            <circle cx="12" cy="12" r="2"></circle>
-          </svg>
-          Efectivo
-        </button>
-        <button class="tab-btn yape" id="tab-yape" onclick="seleccionarMetodoCobro('YAPE')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          Yape / Plin
-        </button>
-      </div>
-
-      <!-- Contenido 1: Efectivo -->
-      <div class="tab-content active" id="content-efectivo">
-        <div class="form-group">
-          <label class="form-label">Monto recibido (S/.)</label>
-          <input type="number" id="input-monto-recibido" class="input-field" placeholder="Ej: 50.00" step="0.50" oninput="calcularVuelto()">
-        </div>
-        
-        <div class="cash-change-box">
-          <span style="font-size: 13px; color: var(--text-muted);">Vuelto a entregar:</span>
-          <span style="font-size: 20px; font-weight: 800; color: var(--accent-amber);" id="txt-vuelto">S/. 0.00</span>
-        </div>
-
-        <button class="btn-confirm-cash" onclick="finalizarVenta('Efectivo')">EMITIR COMPROBANTE (EFECTIVO)</button>
-      </div>
-
-      <!-- Contenido 2: Yape / Plin -->
-      <div class="tab-content" id="content-yape">
-        <div style="background: rgba(139, 92, 246, 0.1); border: 1px dashed var(--accent-purple); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 14px;">
-          <p style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px;">PAGO DIGITAL YAPE / PLIN</p>
-          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">El cliente debe transferir al QR oficial del mostrador:</p>
-          <div style="font-size: 20px; font-weight: 800; color: var(--accent-purple);" id="yape-monto-cobrar">S/. 0.00</div>
-        </div>
-
-        <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 8px;">
-          Verifica la confirmación en el celular o el sonido de la app.
-        </p>
-
-        <button class="btn-confirm-yape" onclick="finalizarVenta('Yape')">CONFIRMAR PAGO YAPE (EMITIR)</button>
-      </div>
-
-    </div>
   </div>
 
   <script src="app.js"></script>

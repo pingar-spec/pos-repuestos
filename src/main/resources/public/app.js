@@ -46,7 +46,6 @@ async function cargarProductosDesdeBackend() {
 
     const datos = await respuesta.json();
     
-    // Mapeo defensivo de atributos TiDB Cloud
     catalogoProductos = datos.map(p => ({
       id: p.idProducto || p.id,
       nombre: p.nombre || 'Repuesto sin nombre',
@@ -231,6 +230,8 @@ function actualizarVistaCarrito() {
     document.getElementById('txt-subtotal').innerText = 'S/. 0.00';
     document.getElementById('txt-igv').innerText = 'S/. 0.00';
     document.getElementById('txt-total').innerText = 'S/. 0.00';
+    document.getElementById('txt-yape-monto').innerText = 'S/. 0.00';
+    calcularVueltoDirecto();
     return;
   }
 
@@ -256,13 +257,58 @@ function actualizarVistaCarrito() {
     contenedor.appendChild(row);
   });
 
-  // Cálculo tributario SUNAT (18% sobre base imponible)
   const subtotalNeto = totalPagar / 1.18;
   const igvCalculado = totalPagar - subtotalNeto;
 
   document.getElementById('txt-subtotal').innerText = `S/. ${subtotalNeto.toFixed(2)}`;
   document.getElementById('txt-igv').innerText = `S/. ${igvCalculado.toFixed(2)}`;
   document.getElementById('txt-total').innerText = `S/. ${totalPagar.toFixed(2)}`;
+  document.getElementById('txt-yape-monto').innerText = `S/. ${totalPagar.toFixed(2)}`;
+  calcularVueltoDirecto();
+}
+
+// ===================================================
+// CONTROL DE PAGO DIRECTO (EFECTIVO Y YAPE)
+// ===================================================
+function cambiarMetodoCobro(metodo) {
+  metodoPagoSeleccionado = metodo;
+  const btnE = document.getElementById('btn-pay-efectivo');
+  const btnY = document.getElementById('btn-pay-yape');
+  const panelE = document.getElementById('panel-efectivo');
+  const panelY = document.getElementById('panel-yape');
+
+  if (metodo === 'EFECTIVO') {
+    btnE.classList.add('active');
+    btnY.classList.remove('active');
+    panelE.classList.add('active');
+    panelY.classList.remove('active');
+    document.getElementById('input-efectivo-recibido').focus();
+  } else {
+    btnY.classList.add('active');
+    btnE.classList.remove('active');
+    panelY.classList.add('active');
+    panelE.classList.remove('active');
+  }
+}
+
+function calcularVueltoDirecto() {
+  const total = obtenerTotalCarrito();
+  const recibido = parseFloat(document.getElementById('input-efectivo-recibido').value) || 0;
+  const vuelto = recibido - total;
+  const txtVuelto = document.getElementById('txt-vuelto-directo');
+
+  if (!txtVuelto) return;
+
+  if (recibido === 0) {
+    txtVuelto.innerText = 'S/. 0.00';
+    txtVuelto.style.color = 'var(--text-muted)';
+  } else if (vuelto >= 0) {
+    txtVuelto.innerText = `S/. ${vuelto.toFixed(2)}`;
+    txtVuelto.style.color = 'var(--accent-green)';
+  } else {
+    txtVuelto.innerText = `Falta S/. ${Math.abs(vuelto).toFixed(2)}`;
+    txtVuelto.style.color = 'var(--accent-red)';
+  }
 }
 
 // ===================================================
@@ -314,11 +360,11 @@ function validarDocumento() {
 }
 
 // ===================================================
-// MODAL DE COBRO ÁGIL (EFECTIVO Y YAPE)
+// EMISIÓN FINAL DE COMPROBANTE Y REGISTRO EN VENTAS DEL DÍA
 // ===================================================
-function abrirModalCobro() {
+function procesarEmisionFinal() {
   if (carrito.length === 0) {
-    alert('Agrega al menos un repuesto al comprobante para cobrar.');
+    alert('Agrega al menos un repuesto a la lista para emitir el comprobante.');
     return;
   }
 
@@ -329,72 +375,15 @@ function abrirModalCobro() {
   }
 
   const total = obtenerTotalCarrito();
-  document.getElementById('modal-monto-total').innerText = `S/. ${total.toFixed(2)}`;
-  document.getElementById('yape-monto-cobrar').innerText = `S/. ${total.toFixed(2)}`;
-  
-  // Limpiar inputs de cobro
-  document.getElementById('input-monto-recibido').value = '';
-  document.getElementById('txt-vuelto').innerText = 'S/. 0.00';
-  seleccionarMetodoCobro('EFECTIVO');
 
-  document.getElementById('modal-cobro').classList.add('active');
-}
-
-function cerrarModalCobro() {
-  document.getElementById('modal-cobro').classList.remove('active');
-}
-
-function seleccionarMetodoCobro(metodo) {
-  metodoPagoSeleccionado = metodo;
-  const tabE = document.getElementById('tab-efectivo');
-  const tabY = document.getElementById('tab-yape');
-  const contE = document.getElementById('content-efectivo');
-  const contY = document.getElementById('content-yape');
-
-  if (metodo === 'EFECTIVO') {
-    tabE.classList.add('active');
-    tabY.classList.remove('active');
-    contE.classList.add('active');
-    contY.classList.remove('active');
-    document.getElementById('input-monto-recibido').focus();
-  } else {
-    tabY.classList.add('active');
-    tabE.classList.remove('active');
-    contY.classList.add('active');
-    contE.classList.remove('active');
-  }
-}
-
-function calcularVuelto() {
-  const total = obtenerTotalCarrito();
-  const recibido = parseFloat(document.getElementById('input-monto-recibido').value) || 0;
-  const vuelto = recibido - total;
-  const txtVuelto = document.getElementById('txt-vuelto');
-
-  if (vuelto >= 0) {
-    txtVuelto.innerText = `S/. ${vuelto.toFixed(2)}`;
-    txtVuelto.style.color = 'var(--accent-green)';
-  } else {
-    txtVuelto.innerText = `Falta S/. ${Math.abs(vuelto).toFixed(2)}`;
-    txtVuelto.style.color = 'var(--accent-red)';
-  }
-}
-
-// ===================================================
-// FINALIZACIÓN DE VENTA Y REGISTRO EN TIEMPO REAL
-// ===================================================
-function finalizarVenta(metodo) {
-  const total = obtenerTotalCarrito();
-
-  if (metodo === 'Efectivo') {
-    const recibido = parseFloat(document.getElementById('input-monto-recibido').value) || 0;
+  if (metodoPagoSeleccionado === 'EFECTIVO') {
+    const recibido = parseFloat(document.getElementById('input-efectivo-recibido').value) || 0;
     if (recibido < total) {
       alert(`El monto en efectivo recibido (S/. ${recibido.toFixed(2)}) es menor al total a pagar (S/. ${total.toFixed(2)}).`);
       return;
     }
   }
 
-  // Generar número de serie tributario correlativo
   let serieNumero = '';
   if (tipoDocumentoSeleccionado === 'BOLETA') {
     serieNumero = `B001-${String(correlativoBoleta).padStart(6, '0')}`;
@@ -404,39 +393,35 @@ function finalizarVenta(metodo) {
     correlativoFactura++;
   }
 
-  // Hora actual del mostrador
   const ahora = new Date();
   const horaTexto = ahora.toTimeString().substring(0, 5);
-
-  const cliente = (document.getElementById('input-nombre').value || 'CLIENTES VARIOS').trim();
   const doc = (document.getElementById('input-doc').value || '00000000').trim();
 
-  // Guardar en el historial en memoria
+  // Guardar venta
   historialVentas.unshift({
     hora: horaTexto,
     numero: serieNumero,
     tipo: tipoDocumentoSeleccionado,
     cliente: cliente,
     documento: doc,
-    metodo: metodo,
+    metodo: metodoPagoSeleccionado === 'EFECTIVO' ? 'Efectivo' : 'Yape',
     total: total
   });
 
-  cerrarModalCobro();
+  alert(`¡Comprobante emitido con éxito!\n\n${tipoDocumentoSeleccionado}: ${serieNumero}\nCliente: ${cliente}\nMétodo: ${metodoPagoSeleccionado}\nTotal Pagado: S/. ${total.toFixed(2)}\n\nRegistrado en caja y disponible en "Ventas del Día".`);
 
-  alert(`¡Comprobante emitido con éxito!\n\n${tipoDocumentoSeleccionado}: ${serieNumero}\nCliente: ${cliente}\nMétodo: ${metodo}\nTotal Pagado: S/. ${total.toFixed(2)}\n\nRegistrado en caja y sincronizado con TiDB Cloud.`);
-
-  // Limpiar panel de facturación
+  // Limpiar panel de venta
   carrito = [];
   document.getElementById('input-doc').value = '';
   document.getElementById('input-nombre').value = '';
   document.getElementById('input-placa').value = '';
+  document.getElementById('input-efectivo-recibido').value = '';
   actualizarVistaCarrito();
   actualizarTablaVentas();
 }
 
 // ===================================================
-// ACTUALIZAR SECCIÓN: VENTAS DEL DÍA Y MÉTRICAS
+// HISTORIAL DE VENTAS DEL DÍA Y MÉTRICAS
 // ===================================================
 function actualizarTablaVentas() {
   const tbody = document.getElementById('tabla-ventas-body');
@@ -488,7 +473,6 @@ function actualizarTablaVentas() {
     });
   }
 
-  // Actualizar métricas visuales
   const elTotal = document.getElementById('metrica-total-dia');
   const elEfec = document.getElementById('metrica-efectivo');
   const elDig = document.getElementById('metrica-digital');

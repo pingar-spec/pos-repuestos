@@ -16,6 +16,7 @@
   --accent-blue: #3b82f6;
   --accent-amber: #f59e0b;
   --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
 }
 
 * {
@@ -207,7 +208,7 @@ body {
 }
 
 /* ===================================================
-   MÓDULO: VENTA RÁPIDA (DISEÑO A 2 COLUMNAS)
+   MÓDULO: VENTA RÁPIDA (POS)
    =================================================== */
 .pos-layout {
   display: flex;
@@ -376,6 +377,7 @@ body {
   flex-direction: column;
   padding: 20px;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .billing-title {
@@ -467,7 +469,8 @@ body {
 }
 
 .cart-items-box {
-  flex: 1;
+  min-height: 90px;
+  max-height: 140px;
   overflow-y: auto;
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
@@ -502,7 +505,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -518,6 +521,90 @@ body {
   color: var(--text-main);
   padding-top: 4px;
   border-top: 1px dashed var(--border-color);
+}
+
+/* ===================================================
+   SELECCIÓN DE PAGO INTEGRADA (SIN VENTANAS FLOTANTES)
+   =================================================== */
+.payment-method-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 14px;
+}
+
+.payment-tabs-inline {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.pay-btn {
+  flex: 1;
+  padding: 7px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pay-btn.active {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.pay-panel {
+  display: none;
+}
+
+.pay-panel.active {
+  display: block;
+}
+
+.change-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 2px;
+}
+
+.change-indicator strong {
+  font-size: 14px;
+  color: var(--accent-green);
+}
+
+.yape-notice {
+  background-color: rgba(139, 92, 246, 0.1);
+  border: 1px dashed var(--accent-purple);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.yape-notice span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.yape-notice strong {
+  font-size: 16px;
+  color: var(--accent-purple);
+}
+
+.yape-notice small {
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 .btn-checkout {
