@@ -52,6 +52,7 @@
     </dependencies>
 
     <build>
+         <finalName>app</finalName>
         <plugins>
             <!-- Plugin para empaquetar un JAR ejecutable completo -->
             <plugin>
