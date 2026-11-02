@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+   
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturación Electrónica POS | Lubricantes y Repuestos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-app: #edf1f5;
+            --bg-sidebar: #ffffff;
+            --border-sidebar: #dbe2ea;
+            --primary-blue: #0284c7;
+            --primary-blue-hover: #0369a1;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-ui: #cbd5e1;
+            --success-color: #047857;
+            --success-bg: #d1fae5;
+            --danger-color: #ef4444;
+            --danger-bg: #fee2e2;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg-app); color: var(--text-dark); height: 100vh; display: flex; overflow: hidden; }
+
+        /* ================= SIDEBAR EMITE ================= */
+        aside {
+            width: 220px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-sidebar);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .aside-header {
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-sidebar);
+            background: #ffffff;
+        }
+        .aside-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #0284c7;
+            background: #fff;
+            position: relative;
+        }
+        .aside-logo::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 2px;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .aside-company { display: flex; flex-direction: column; line-height: 1.2; }
+        .aside-company strong { font-size: 11px; color: #0f172a; text-transform: uppercase; }
+        .aside-company span { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+        .aside-nav { list-style: none; padding: 6px 0; overflow-y: auto; flex: 1; }
+        .nav-group-title { font-size: 10px; font-weight: 800; color: #94a3b8; padding: 10px 16px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-link-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+            border-left: 3px solid transparent;
+            user-select: none;
+        }
+        .nav-link-btn i { width: 16px; font-size: 13px; text-align: center; color: #64748b; }
+        .nav-link-btn:hover { background: #f1f5f9; color: #0f172a; }
+        .nav-link-btn.active { background: #e0f2fe; color: var(--primary-blue-hover); border-left-color: var(--primary-blue); font-weight: 700; }
+        .nav-link-btn.active i { color: var(--primary-blue); }
+
+        /* ================= ÁREA DE TRABAJO ================= */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-app);
+        }
+
+        .top-banner {
+            height: 44px;
+            background: var(--primary-blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .screen-module {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none !important;
+            overflow: hidden;
+        }
+        .screen-module.active {
+            display: flex !important;
+        }
+
+        /* VISTA 1: POS VENTA RÁPIDA */
+        .pos-left-order {
+            flex: 50%;
+            background: #ffffff;
+            border-right: 1px solid var(--border-ui);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            overflow: hidden;
+        }
+        .client-search-row { display: flex; gap: 6px; margin-bottom: 8px; flex-shrink: 0; }
+        .client-search-row input { flex: 1; border: 1px solid var(--border-ui); border-radius: 4px; padding: 7px 10px; font-size: 12px; outline: none; }
+        .client-search-row button { background: #f1f5f9; border: 1px solid var(--border-ui); padding: 0 10px; border-radius: 4px; cursor: pointer; color: #334155; font-size: 13px; }
+
+        .order-table-container { flex: 1; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px; background: #fafafa; margin-bottom: 8px; }
+        .order-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .order-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 11px; color: #475569; border-bottom: 1px solid #cbd5e1; }
+        .order-table td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+
+        .pos-order-footer {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            flex-shrink: 0;
+        }
+        .btn-pos-continuar {
+            background: var(--primary-blue);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3);
+            transition: 0.15s;
+        }
+        .btn-pos-continuar:hover { background: var(--primary-blue-hover); }
+
+        .tax-summary-box { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: #475569; }
+        .tax-row { display: flex; justify-content: space-between; }
+        .tax-grand-total { font-size: 24px; font-weight: 800; color: #0f172a; border-top: 1px dashed #cbd5e1; padding-top: 4px; margin-top: 2px; display: flex; justify-content: space-between; }
+
+        .pos-right-catalog {
+            flex: 50%;
+            background: #eef2f5;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 14px;
+            overflow: hidden;
+        }
+        .categories-pill-box {
+            background: #ffffff;
+            border: 1px solid var(--border-ui);
+            border-radius: 6px;
+            padding: 6px 8px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .cat-pill {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .cat-pill.active, .cat-pill:hover { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+
+        .search-catalog-input { position: relative; margin-bottom: 8px; flex-shrink: 0; }
+        .search-catalog-input input { width: 100%; background: #fff; border: 1px solid var(--border-ui); border-radius: 4px; padding: 8px 30px 8px 10px; font-size: 12px; outline: none; }
+        .search-catalog-input i { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+
+        .products-grid-scroll { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; overflow-y: auto; padding-right: 4px; }
+        .product-card-emite { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; transition: 0.15s; }
+        .product-card-emite:hover { border-color: var(--primary-blue); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.06); }
+        .badge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .unit-badge { background: #0284c7; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 2px; }
+        .stock-badge { background: #10b981; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 2px; }
+        .prod-title { font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.2; margin-bottom: 4px; }
+        .prod-sub { font-size: 10px; color: var(--text-muted); line-height: 1.2; margin-bottom: 6px; }
+        .prod-price { font-size: 13px; font-weight: 800; color: #0f172a; text-align: right; border-top: 1px dashed #e2e8f0; padding-top: 4px; }
+
+        /* VISTAS ADMIN */
+        .admin-page-layout {
+            flex: 1;
+            background: #ffffff;
+            padding: 20px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+        .admin-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-sidebar);
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+        .admin-page-header h2 { font-size: 17px; font-weight: 700; color: #0f172a; }
+        .admin-btn-group { display: flex; gap: 8px; }
+        .btn-blue-action {
+            background: var(--primary-blue);
+            color: #fff;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-blue-action:hover { background: var(--primary-blue-hover); }
+
+        .btn-red-action {
+            background: var(--danger-color);
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-red-action:hover { background: #b91c1c; }
+
+        .table-emite-wrap { flex: 1; overflow-y: auto; border: 1px solid var(--border-ui); border-radius: 6px; }
+        .table-emite { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        .table-emite th { background: #f8fafc; padding: 9px 12px; border-bottom: 1px solid var(--border-ui); color: #475569; font-weight: 700; }
+        .table-emite td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; }
+
+        /* MODALES */
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 100; }
+        .modal-box-emite { background: #fff; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 440px; padding: 18px; color: var(--text-dark); }
+        .modal-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .form-ctrl { display: flex; flex-direction: column; gap: 2px; }
+        .form-ctrl label { font-size: 11px; font-weight: 700; color: #475569; }
+        .form-ctrl input, .form-ctrl select { border: 1px solid var(--border-ui); border-radius: 4px; padding: 7px; font-size: 12px; outline: none; }
+
+        .ticket-receipt-card { background: #fff; width: 330px; padding: 18px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; }
+        .ticket-line { border-bottom: 1px dashed #000; margin: 8px 0; }
+        .ticket-item-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA LATERAL -->
+    <aside>
+        <div class="aside-header">
+            <div class="aside-logo">Emite</div>
+            <div class="aside-company">
+                <strong>LUBRICANTES Y SERVICIOS</strong>
+                <span>PRINCIPAL</span>
+            </div>
+        </div>
+
+        <ul class="aside-nav">
+            <li class="nav-group-title">POS</li>
+            <li><div class="nav-link-btn active" onclick="mostrarPantalla('pantallaPos', this)"><i class="fa-solid fa-credit-card"></i> <span>Venta rápida</span></div></li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaResumenVentas', this)"><i class="fa-solid fa-list-check"></i> <span>Resumen de ventas</span></div></li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaComprobantes', this)"><i class="fa-solid fa-receipt"></i> <span>Comprobantes</span></div></li>
+
+            <li class="nav-group-title">REGISTROS</li>
+            <li><div class="nav-link-btn" onclick="abrirModalCliente()"><i class="fa-solid fa-users"></i> <span>Clientes</span></div></li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaProductos', this)"><i class="fa-solid fa-boxes-stacked"></i> <span>Productos</span></div></li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaMarcas', this)"><i class="fa-solid fa-tags"></i> <span>Marcas</span></div></li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaCategorias', this)"><i class="fa-solid fa-bookmark"></i> <span>Categorías</span></div></li>
+
+            <li class="nav-group-title">CAJA</li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaGestionCajas', this)"><i class="fa-solid fa-cash-register"></i> <span>Gestionar caja</span></div></li>
+            <li><div class="nav-link-btn" onclick="mostrarPantalla('pantallaResumenCajas', this)"><i class="fa-solid fa-vault"></i> <span>Resumen de cajas</span></div></li>
+        </ul>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-content">
+        <header class="top-banner">
+            <span style="font-size:13px; font-weight:700;" id="bannerTituloSeccion"><i class="fa-solid fa-store"></i> Venta rápida</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span id="badgeEstadoCajaTop" style="background:#d1fae5; color:#047857; font-weight:700; padding:2px 8px; border-radius:3px; font-size:11px;">CAJA ABIERTA</span>
+                <div style="font-size:11px; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:3px;">
+                    <i class="fa-solid fa-circle" style="color:#a7f3d0; font-size:8px;"></i> Servidor Java Conectado
+                </div>
+            </div>
+        </header>
+
+        <!-- 1. VENTA RÁPIDA -->
+        <section id="pantallaPos" class="screen-module active" style="flex-direction:row;">
+            <div class="pos-left-order">
+                <div class="client-search-row">
+                    <input type="text" id="clientDoc" placeholder="Buscar cliente (DNI / RUC)..." maxlength="11" oninput="actualizarTipoComprobante()">
+                    <input type="text" id="carPlate" placeholder="Placa auto" style="width:100px; text-transform:uppercase;">
+                    <button onclick="abrirModalCliente()" title="Agregar cliente"><i class="fa-solid fa-plus"></i></button>
+                    <button onclick="abrirModalHistorialPlaca()" title="Historial vehicular"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; font-weight:700;">
+                    <span id="docTypeLabel" style="color:var(--primary-blue);">BOLETA DE VENTA ELECTRÓNICA</span>
+                    <span style="color:#64748b;">PORCENTAJE DE IGV 18%</span>
+                </div>
+
+                <div class="order-table-container">
+                    <table class="order-table">
+                        <thead>
+                            <tr><th>Cant.</th><th>Descripción</th><th style="text-align:right;">P.U.</th><th style="text-align:right;">Total</th><th style="text-align:center;"></th></tr>
+                        </thead>
+                        <tbody id="cartTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="pos-order-footer">
+                    <button class="btn-pos-continuar" onclick="abrirModalCobroFinal()"><span>Continuar</span></button>
+                    <div class="tax-summary-box">
+                        <div class="tax-row"><span>Gravada:</span><span id="gravadaDisplay">0.00</span></div>
+                        <div class="tax-row"><span>IGV 18%:</span><span id="igvDisplay">0.00</span></div>
+                        <div class="tax-grand-total"><span>TOTAL S/</span><span id="totalDisplay">0.00</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pos-right-catalog">
+                <div class="categories-pill-box">
+                    <button class="cat-pill active" onclick="filtrarCategoriaPOS('TODOS')">Todos</button>
+                    <button class="cat-pill" onclick="filtrarCategoriaPOS('Aceites')">Aceite de motor</button>
+                    <button class="cat-pill" onclick="filtrarCategoriaPOS('Fajas')">Fajas</button>
+                    <button class="cat-pill" onclick="filtrarCategoriaPOS('Mangueras')">Mangueras</button>
+                    <button class="cat-pill" onclick="filtrarCategoriaPOS('Focos / Luces')">Focos / Luces</button>
+                </div>
+
+                <div class="search-catalog-input">
+                    <input type="text" id="searchInput" placeholder="Buscar repuesto por nombre, OEM o marca... [F2]">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+
+                <div class="products-grid-scroll" id="catalogCardsContainer"></div>
+            </div>
+        </section>
+
+        <!-- 2. RESUMEN DE VENTAS -->
+        <section id="pantallaResumenVentas" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Resumen Diario de Ventas</h2>
+                <button class="btn-blue-action" onclick="cargarDatosCajaAdmin()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;">
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+                    <div style="font-size:11px; font-weight:700; color:#64748b;">TOTAL RECAUDADO</div>
+                    <div style="font-size:22px; font-weight:800; color:#0284c7;" id="kpiTotalVentas">S/ 0.00</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+                    <div style="font-size:11px; font-weight:700; color:#64748b;">EFECTIVO EN GAVETA</div>
+                    <div style="font-size:22px; font-weight:800; color:#0f172a;" id="kpiEfectivo">S/ 0.00</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+                    <div style="font-size:11px; font-weight:700; color:#64748b;">DIGITAL (YAPE/PLIN)</div>
+                    <div style="font-size:22px; font-weight:800; color:#0f172a;" id="kpiDigital">S/ 0.00</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+                    <div style="font-size:11px; font-weight:700; color:#64748b;">DOCUMENTOS EMITIDOS</div>
+                    <div style="font-size:22px; font-weight:800; color:#0f172a;" id="kpiDocs">0</div>
+                </div>
+            </div>
+
+            <div class="table-emite-wrap">
+                <table class="table-emite">
+                    <thead><tr><th>Medio de Pago</th><th style="text-align:right;">Total Recaudado</th></tr></thead>
+                    <tbody>
+                        <tr><td>💵 Efectivo</td><td style="text-align:right; font-weight:700;" id="rowEfectivo">S/ 0.00</td></tr>
+                        <tr><td>📱 Yape</td><td style="text-align:right; font-weight:700;" id="rowYape">S/ 0.00</td></tr>
+                        <tr><td>📲 Plin</td><td style="text-align:right; font-weight:700;" id="rowPlin">S/ 0.00</td></tr>
+                        <tr><td>💳 Tarjetas</td><td style="text-align:right; font-weight:700;" id="rowTarjeta">S/ 0.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. COMPROBANTES EMITIDOS -->
+        <section id="pantallaComprobantes" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Comprobantes Electrónicos Emitidos</h2>
+                <button class="btn-blue-action" onclick="cargarComprobantesLista()"><i class="fa-solid fa-rotate"></i> Actualizar Listado</button>
+            </div>
+            <div class="table-emite-wrap">
+                <table class="table-emite">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th><th>Tipo Comprobante</th><th>Número</th><th>Cliente (DNI/RUC)</th><th>Placa</th><th>Método Pago</th><th style="text-align:right;">Total S/</th><th style="text-align:center;">Firma Criptográfica</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comprobantesTableBody">
+                        <tr><td colspan="8" style="text-align:center; padding:20px; color:#64748b;">Comprobantes sincronizados en MySQL.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 4. PRODUCTOS (ENFOCADO EN REPUESTOS) -->
+        <section id="pantallaProductos" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Productos en Almacén</h2>
+                <div class="admin-btn-group">
+                    <button class="btn-blue-action" onclick="exportarProductosCSV()"><i class="fa-solid fa-file-excel"></i> Exportar productos</button>
+                    <button class="btn-blue-action" onclick="abrirModalNuevoProducto()"><i class="fa-solid fa-plus"></i> + Agregar Producto</button>
+                </div>
+            </div>
+
+            <div class="search-filter-card" style="background:#f8fafc; border:1px solid #dbe2ea; border-radius:6px; padding:12px; margin-bottom:14px; display:flex; gap:12px; align-items:flex-end;">
+                <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                    <label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Buscar Repuesto (Código, Nombre, Marca o Medida)</label>
+                    <input type="text" id="adminFilterInput" placeholder="Presione o escriba para filtrar..." oninput="renderizarTablaProductosAdmin()" style="border:1px solid #cbd5e1; padding:7px 10px; border-radius:4px; font-size:12px; outline:none; background:#fff;">
+                </div>
+                <button class="btn-blue-action" style="padding:7px 16px;" onclick="renderizarTablaProductosAdmin()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            </div>
+
+            <div class="table-emite-wrap">
+                <table class="table-emite">
+                    <thead>
+                        <tr>
+                            <th>N°</th><th>Código</th><th>Nombre</th><th>Tipo</th><th>Unidad</th><th>Moneda</th><th>Precio Venta</th><th>Stock</th><th style="text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProductsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 5. MARCAS -->
+        <section id="pantallaMarcas" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Gestión de Marcas</h2>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('modalMarca').style.display='flex'">+ Nueva Marca</button>
+            </div>
+            <div class="table-emite-wrap">
+                <table class="table-emite">
+                    <thead><tr><th>ID</th><th>Nombre de Marca</th><th>Repuestos Asociados</th><th>Estado</th></tr></thead>
+                    <tbody id="marcasTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 6. CATEGORÍAS -->
+        <section id="pantallaCategorias" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Categorías de Productos</h2>
+               <button type="button" class="btn-blue-action" onclick="document.getElementById('modalCategoria').style.display='flex'">+ Nueva Categoría</button>
+            </div>
+            <div class="table-emite-wrap">
+                <table class="table-emite">
+                    <thead><tr><th>ID</th><th>Nombre de Categoría</th><th>Familia</th><th>Total Repuestos</th></tr></thead>
+                    <tbody id="categoriasTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 7. GESTIONAR CAJA -->
+        <section id="pantallaGestionCajas" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Gestión de Cajas</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-blue-action" onclick="abrirModalAperturaCaja()"><i class="fa-solid fa-lock-open"></i> Abrir Caja</button>
+                    <button class="btn-blue-action" onclick="cargarDatosCajaAdmin()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:14px; font-weight:700;">Listado de cajas</h3>
+                <span id="fechaActualCajaLabel" style="font-weight:700; font-size:13px; color:#334155;">Fecha: 30/10/2026</span>
+            </div>
+
+            <div class="table-emite-wrap" style="max-height: 250px; margin-bottom: 24px;">
+                <table class="table-emite">
+                    <thead>
+                        <tr>
+                            <th>Establecimiento</th><th>Nombre</th><th>Estado</th><th>Abierto por</th><th>Fecha</th><th>Hora</th><th>Disponibilidad</th><th style="text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCajaGestionBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 8. RESUMEN DE CAJAS -->
+        <section id="pantallaResumenCajas" class="screen-module admin-page-layout">
+            <div class="admin-page-header">
+                <h2>Resumen de Cajas (Auditoría Histórica)</h2>
+            </div>
+            <div class="table-emite-wrap">
+                <table class="table-emite">
+                    <thead>
+                        <tr><th>Turno / ID</th><th>Establecimiento</th><th>Responsable</th><th>Fecha Apertura</th><th>Fecha Cierre</th><th style="text-align:right;">Saldo Final S/</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody id="tablaResumenCajasBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL NUEVA MARCA -->
+    <div class="modal-backdrop" id="modalMarca">
+        <div class="modal-box-emite" style="width: 380px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                <h4 style="font-size:13px; font-weight:700;"><i class="fa-solid fa-tag" style="color:var(--primary-blue);"></i> Registrar Marca</h4>
+                <button onclick="document.getElementById('modalMarca').style.display='none'" style="background:none; border:none; cursor:pointer;">✕</button>
+            </div>
+            <form onsubmit="guardarMarca(event)" style="margin-top:10px;">
+                <div class="form-ctrl" style="margin-bottom:10px;">
+                    <label>NOMBRE DE LA MARCA *</label>
+                    <input type="text" id="inputNombreMarca" placeholder="Ej. Mobil, Gates, Bando, Bosch" required>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:6px;">
+                    <button type="button" onclick="document.getElementById('modalMarca').style.display='none'" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:6px 12px; border-radius:4px; cursor:pointer;">Cancelar</button>
+                    <button type="submit" class="btn-blue-action">Guardar Marca</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVA CATEGORÍA -->
+   <!-- Modal para Registrar Categoría -->
+<div class="modal-backdrop" id="modalCategoria" style="display: none;">
+    <div class="modal-box-emite" style="width: 380px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="font-size:13px; font-weight:700;"><i class="fa-solid fa-folder"></i> Nueva Categoría</h4>
+            <button type="button" onclick="document.getElementById('modalCategoria').style.display='none'" style="background:none; border:none; cursor:pointer;">✕</button>
+        </div>
+        <form onsubmit="guardarCategoria(event)" style="margin-top:10px;">
+            <div class="form-ctrl" style="margin-bottom:10px;">
+                <label>NOMBRE DE LA CATEGORÍA *</label>
+                <input type="text" id="inputNombreCategoria" placeholder="Ej. Filtros, Frenos, Motor..." required>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:6px;">
+                <button type="button" onclick="document.getElementById('modalCategoria').style.display='none'" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:6px 12px; border-radius:4px; cursor:pointer;">Cancelar</button>
+                <button type="submit" class="btn-blue-action">Guardar Categoría</button>
+            </div>
+        </form>
+    </div>
+</div>
+    <!-- MODAL APERTURA CAJA -->
+    <div class="modal-backdrop" id="modalAperturaCaja">
+        <div class="modal-box-emite" style="width: 360px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
+                <h4 style="font-size:13px; font-weight:700; color:#0284c7;"><i class="fa-solid fa-lock-open"></i> Apertura de Caja</h4>
+                <button onclick="document.getElementById('modalAperturaCaja').style.display='none'" style="background:none; border:none; cursor:pointer;">✕</button>
+            </div>
+            <div class="form-ctrl" style="margin-bottom:12px;">
+                <label>MONTO INICIAL EN GAVETA (S/)</label>
+                <input type="number" id="inputMontoApertura" step="1.00" value="100.00" required>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-blue-action" style="flex:1; justify-content:center;" onclick="confirmarAperturaCaja()">Confirmar Apertura</button>
+                <button onclick="document.getElementById('modalAperturaCaja').style.display='none'" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:0 12px; border-radius:4px; cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CIERRE CAJA -->
+    <div class="modal-backdrop" id="modalCierreCaja">
+        <div class="modal-box-emite" style="width: 360px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
+                <h4 style="font-size:13px; font-weight:700; color:#dc2626;"><i class="fa-solid fa-lock"></i> Cierre y Cuadre de Caja</h4>
+                <button onclick="document.getElementById('modalCierreCaja').style.display='none'" style="background:none; border:none; cursor:pointer;">✕</button>
+            </div>
+            <div style="margin-bottom:10px; font-size:12px; color:#475569;">
+                <div>Total en Sistema: <strong id="lblCierreTotalSistema">S/ 0.00</strong></div>
+            </div>
+            <div class="form-ctrl" style="margin-bottom:12px;">
+                <label>MONTO CONTADO FÍSICO EN GAVETA (S/)</label>
+                <input type="number" id="inputMontoCierre" step="0.50" required>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-red-action" style="flex:1; justify-content:center; padding:8px;" onclick="confirmarCierreCaja()"><i class="fa-solid fa-check"></i> Proceder con el Cierre</button>
+                <button onclick="document.getElementById('modalCierreCaja').style.display='none'" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:0 12px; border-radius:4px; cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR CLIENTE -->
+    <div class="modal-backdrop" id="modalCliente">
+        <div class="modal-box-emite" style="width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                <h4 style="font-size:13px; font-weight:700; color:#0284c7; text-transform:uppercase;">AGREGAR CLIENTE</h4>
+                <button onclick="cerrarModalCliente()" style="background:none; border:none; cursor:pointer; font-size:16px;">✕</button>
+            </div>
+            <form onsubmit="guardarClienteLocal(event)" style="margin-top:10px;">
+                <div class="form-ctrl" style="margin-bottom:8px;">
+                    <label>TIPO DE IDENTIFICACIÓN</label>
+                    <select id="modalDocTipo">
+                        <option value="DNI">Documento nacional de identidad (DNI)</option>
+                        <option value="RUC">Registro único de contribuyentes (RUC)</option>
+                        <option value="CE">Carnet de extranjería (CE)</option>
+                    </select>
+                </div>
+                <div class="form-ctrl" style="margin-bottom:8px;">
+                    <label>IDENTIFICACIÓN</label>
+                    <input type="text" id="modalDocNumero" placeholder="Número de documento" required>
+                </div>
+                <div class="form-ctrl" style="margin-bottom:8px;">
+                    <label>NOMBRE O RAZÓN SOCIAL</label>
+                    <input type="text" id="modalNombreCliente" placeholder="Nombre completo" required>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+                    <button type="button" onclick="cerrarModalCliente()" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:7px 14px; border-radius:4px; cursor:pointer;">Cerrar</button>
+                    <button type="submit" class="btn-blue-action">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL FINALIZAR COBRO -->
+    <div class="modal-backdrop" id="modalCobro">
+        <div class="modal-box-emite" style="width: 360px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
+                <h4 style="font-size:13px; font-weight:700;"><i class="fa-solid fa-cash-register" style="color:var(--primary-blue);"></i> Finalizar Cobro</h4>
+                <button onclick="cerrarModalCobroFinal()" style="background:none; border:none; cursor:pointer; font-size:16px;">✕</button>
+            </div>
+            <div style="text-align:center; margin-bottom:12px;">
+                <span style="font-size:11px; color:#64748b;">Total a Pagar:</span>
+                <div style="font-size:26px; font-weight:800; color:#0f172a;" id="cobroModalTotalText">S/ 0.00</div>
+            </div>
+            <div class="form-ctrl" style="margin-bottom:10px;">
+                <label>MÉTODO DE PAGO</label>
+                <select id="modalMetodoPagoSelect" onchange="cambiarMetodoPagoCobro()">
+                    <option value="EFECTIVO">EFECTIVO</option>
+                    <option value="YAPE">YAPE</option>
+                    <option value="PLIN">PLIN</option>
+                    <option value="TARJETA">TARJETA DÉBITO / CRÉDITO</option>
+                </select>
+            </div>
+            <div class="form-ctrl" style="margin-bottom:12px;">
+                <label>MONTO RECIBIDO</label>
+                <input type="number" id="modalMontoRecibidoInput" step="0.50" placeholder="0.00" oninput="calcularVueltoModal()">
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; margin-bottom:14px; font-size:13px; font-weight:700; color:var(--success-color);" id="modalVueltoText">
+                Vuelto: S/ 0.00
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-blue-action" style="flex:1; justify-content:center; padding:10px;" onclick="ejecutarVentaBackend()">
+                    <i class="fa-solid fa-check"></i> Emitir Comprobante [F4]
+                </button>
+                <button onclick="cerrarModalCobroFinal()" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:0 12px; border-radius:4px; cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR / EDITAR PRODUCTO -->
+    <div class="modal-backdrop" id="modalNuevoProducto">
+        <div class="modal-box-emite">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                <h4 style="font-size:13px; font-weight:700;" id="modalProductoHeaderTitulo"><i class="fa-solid fa-box" style="color:var(--primary-blue);"></i> Registrar Producto</h4>
+                <button onclick="cerrarModalNuevoProducto()" style="background:none; border:none; cursor:pointer;">✕</button>
+            </div>
+            <form onsubmit="guardarProductoFormulario(event)" class="modal-form-grid">
+                <input type="hidden" id="npIdProductoEditar" value="">
+                <div class="form-ctrl" style="grid-column: span 2;"><label>Nombre del Repuesto *</label><input type="text" id="npNombre" required></div>
+                <div class="form-ctrl"><label>Categoría *</label><input type="text" id="npCategoria" required></div>
+                <div class="form-ctrl"><label>Marca *</label><input type="text" id="npMarca" required></div>
+                <div class="form-ctrl"><label>Medida / Viscosidad</label><input type="text" id="npMedida"></div>
+                <div class="form-ctrl"><label>Código OEM / Parte</label><input type="text" id="npOem"></div>
+                <div class="form-ctrl"><label>Costo S/ *</label><input type="number" id="npPrecioCompra" step="0.10" required></div>
+                <div class="form-ctrl"><label>Venta S/ *</label><input type="number" id="npPrecioVenta" step="0.10" required></div>
+                <div class="form-ctrl"><label>Stock *</label><input type="number" id="npStock" required></div>
+                <div class="form-ctrl"><label>Stock Mínimo</label><input type="number" id="npStockMinimo" value="3"></div>
+                <div style="grid-column: span 2; margin-top:8px; display:flex; gap:6px;">
+                    <button type="submit" class="btn-blue-action" style="flex:1; justify-content:center;" id="btnGuardarProdModal">Guardar Repuesto</button>
+                    <button type="button" onclick="cerrarModalNuevoProducto()" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:7px 12px; border-radius:4px;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL PLACA -->
+    <div class="modal-backdrop" id="modalHistorialPlaca">
+        <div class="modal-box-emite" style="width: 520px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+                <h4 id="historialPlacaTitle" style="font-size:13px; font-weight:700;">Historial Técnico Vehicular</h4>
+                <button onclick="document.getElementById('modalHistorialPlaca').style.display='none'" style="background:none; border:none; cursor:pointer;">✕</button>
+            </div>
+            <div style="max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:4px;">
+                <table class="table-emite">
+                    <thead><tr><th>Fecha</th><th>Repuesto</th><th>Medida</th><th>Cant.</th><th>Total</th></tr></thead>
+                    <tbody id="historialPlacaBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TICKET FISCAL -->
+    <div class="modal-backdrop" id="modalTicket">
+        <div class="ticket-receipt-card">
+            <div style="text-align: center;">
+                <strong style="font-size: 13px;">LUBRICANTES Y SERVICIOS</strong><br>
+                <span id="ticketTipo" style="font-size: 11px;">BOLETA DE VENTA ELECTRÓNICA</span><br>
+                <strong id="ticketCorrelativo">B001-00000001</strong><br>
+                <small id="ticketFechaHora" style="color: #64748b;"></small>
+            </div>
+            <div class="ticket-line"></div>
+            <div class="ticket-item-row"><span>CLIENTE:</span><span id="ticketCliente">00000000</span></div>
+            <div class="ticket-item-row"><span>PLACA:</span><span id="ticketPlaca">---</span></div>
+            <div class="ticket-item-row"><span>FORMA DE PAGO:</span><span id="ticketMetodo">EFECTIVO</span></div>
+            <div class="ticket-line"></div>
+            <div id="ticketItemsContainer"></div>
+            <div class="ticket-line"></div>
+            <div class="ticket-item-row"><span>OPERACION GRAVADA:</span><span id="ticketGravada">S/ 0.00</span></div>
+            <div class="ticket-item-row"><span>IGV 18%:</span><span id="ticketIgv">S/ 0.00</span></div>
+            <div class="ticket-item-row" style="font-size: 13px; font-weight:bold;"><span>IMPORTE TOTAL:</span><span id="ticketTotal">S/ 0.00</span></div>
+            <div class="ticket-line"></div>
+            <div style="text-align:center; margin-top:6px;">
+                <i class="fa-solid fa-qrcode" style="font-size: 40px;"></i>
+                <div style="font-size:8px; color:#555; word-break:break-all; margin-top:4px;" id="ticketHash">SHA-256 HASH</div>
+            </div>
+            <button class="btn-blue-action" style="width:100%; justify-content:center; margin-top:10px;" onclick="document.getElementById('modalTicket').style.display='none'">Imprimir / Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        let catalogoProductos = [];
+        let itemsCarrito = [];
+        let categoriaPosSeleccionada = 'TODOS';
+        let ventasEmitidasMemoria = [];
+        let sesionCajaActiva = null;
+
+        function mostrarPantalla(idPantalla, botonNav) {
+            document.querySelectorAll('.screen-module').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link-btn').forEach(btn => btn.classList.remove('active'));
+
+            const target = document.getElementById(idPantalla);
+            if (target) target.classList.add('active');
+            if (botonNav) botonNav.classList.add('active');
+
+            const titulos = {
+                'pantallaPos': 'Venta rápida - Punto de Venta',
+                'pantallaResumenVentas': 'Resumen Diario de Ventas',
+                'pantallaComprobantes': 'Comprobantes Emitidos (Facturas y Boletas)',
+                'pantallaProductos': 'Productos en Almacén',
+                'pantallaMarcas': 'Marcas de Repuestos',
+                'pantallaCategorias': 'Categorías Comerciales',
+                'pantallaGestionCajas': 'Gestión de Cajas de Mostrador',
+                'pantallaResumenCajas': 'Resumen y Arqueo Histórico de Cajas'
+            };
+            document.getElementById('bannerTituloSeccion').innerHTML = `<i class="fa-solid fa-folder-open"></i> ${titulos[idPantalla] || 'POS Facturación'}`;
+
+            if (idPantalla === 'pantallaPos') renderizarCatalogoPOS();
+            if (idPantalla === 'pantallaProductos') renderizarTablaProductosAdmin();
+            if (idPantalla === 'pantallaMarcas') renderizarTablaMarcas();
+            if (idPantalla === 'pantallaCategorias') renderizarTablaCategorias();
+            if (idPantalla === 'pantallaComprobantes') cargarComprobantesLista();
+            if (idPantalla === 'pantallaResumenVentas' || idPantalla === 'pantallaGestionCajas' || idPantalla === 'pantallaResumenCajas') cargarDatosCajaAdmin();
+        }
+
+        async function cargarDatosServidor() {
+            try {
+                const res = await fetch('/api/productos');
+                catalogoProductos = await res.json();
+                renderizarCatalogoPOS();
+                renderizarTablaProductosAdmin();
+                await verificarEstadoCajaBackend();
+            } catch (err) {
+                console.error("Error al cargar servidor:", err);
+            }
+        }
+
+        /* GESTIÓN DE CAJA */
+        async function verificarEstadoCajaBackend() {
+            try {
+                const res = await fetch('/api/caja/estado');
+                sesionCajaActiva = await res.json();
+                const badge = document.getElementById('badgeEstadoCajaTop');
+
+                if (sesionCajaActiva && sesionCajaActiva.estado === 'ABIERTA') {
+                    badge.textContent = "CAJA ABIERTA";
+                    badge.style.background = "#d1fae5";
+                    badge.style.color = "#047857";
+                } else {
+                    badge.textContent = "CAJA CERRADA";
+                    badge.style.background = "#fee2e2";
+                    badge.style.color = "#ef4444";
+                }
+            } catch (e) {
+                console.error("Error verificando caja:", e);
+            }
+        }
+        async function cargarDatosCajaAdmin() {
+    await verificarEstadoCajaBackend();
+    try {
+        const res = await fetch('/api/caja/arqueo');
+        
+        // Si el backend responde con error 404 o 500, no continuar
+        if (!res.ok) {
+            throw new Error(`Error del servidor: ${res.status}`);
+        }
+
+        const d = await res.json();
+
+        // Función de seguridad: si viene null, undefined o no es número, devuelve 0
+        const num = (v) => Number(v != null ? v : 0);
+
+        const rec = num(d.totalRecaudado);
+        const efec = num(d.totalEfectivo);
+        const yape = num(d.totalYape);
+        const plin = num(d.totalPlin);
+        const tarj = num(d.totalTarjeta);
+        const docs = d.totalVentas != null ? d.totalVentas : 0;
+
+        // Mostrar en tarjetas / KPIs
+        const kpiTotal = document.getElementById('kpiTotalVentas');
+        if (kpiTotal) kpiTotal.textContent = `S/ ${rec.toFixed(2)}`;
+
+        const kpiEfec = document.getElementById('kpiEfectivo');
+        if (kpiEfec) kpiEfec.textContent = `S/ ${efec.toFixed(2)}`;
+
+        const kpiDig = document.getElementById('kpiDigital');
+        if (kpiDig) kpiDig.textContent = `S/ ${(yape + plin).toFixed(2)}`;
+
+        const kpiDoc = document.getElementById('kpiDocs');
+        if (kpiDoc) kpiDoc.textContent = docs;
+
+        // Mostrar en filas de detalle
+        const rEfec = document.getElementById('rowEfectivo');
+        if (rEfec) rEfec.textContent = `S/ ${efec.toFixed(2)}`;
+
+        const rYape = document.getElementById('rowYape');
+        if (rYape) rYape.textContent = `S/ ${yape.toFixed(2)}`;
+
+        const rPlin = document.getElementById('rowPlin');
+        if (rPlin) rPlin.textContent = `S/ ${plin.toFixed(2)}`;
+
+        const rTarj = document.getElementById('rowTarjeta');
+        if (rTarj) rTarj.textContent = `S/ ${tarj.toFixed(2)}`;
+
+        if (typeof renderizarFilasCajaGestion === "function") {
+            renderizarFilasCajaGestion(d);
+        }
+    } catch (err) {
+        console.error("Error caja:", err);
+    }
+}
+
+        function renderizarFilasCajaGestion(dataArqueo) {
+            const tbody = document.getElementById('tablaCajaGestionBody');
+            const tbodyHist = document.getElementById('tablaResumenCajasBody');
+            tbody.innerHTML = '';
+            tbodyHist.innerHTML = '';
+
+            const fechaStr = new Date().toLocaleDateString('es-PE');
+            document.getElementById('fechaActualCajaLabel').textContent = `Fecha: ${fechaStr}`;
+
+            const isOpen = sesionCajaActiva && sesionCajaActiva.estado === 'ABIERTA';
+            const badgeEstado = isOpen 
+                ? `<span style="background:var(--success-bg); color:var(--success-color); font-weight:700; padding:2px 8px; border-radius:3px;">CAJA ABIERTA</span>`
+                : `<span style="background:var(--danger-bg); color:var(--danger-color); font-weight:700; padding:2px 8px; border-radius:3px;">CERRADA</span>`;
+            
+            const badgeDisp = isOpen 
+                ? `<span style="background:var(--danger-bg); color:var(--danger-color); font-weight:700; padding:2px 8px; border-radius:3px;">OCUPADA</span>`
+                : `<span style="background:#e2e8f0; color:#475569; font-weight:700; padding:2px 8px; border-radius:3px;">LIBRE</span>`;
+
+            const btnAccionCierre = isOpen
+                ? `<button class="btn-red-action" onclick="abrirModalCierreCaja(${dataArqueo.totalRecaudado})"><i class="fa-solid fa-lock"></i> Cerrar caja</button>`
+                : `<button class="btn-blue-action" style="display:inline-flex; padding:4px 8px; font-size:11px;" onclick="abrirModalAperturaCaja()"><i class="fa-solid fa-lock-open"></i> Abrir caja</button>`;
+
+            tbody.innerHTML = `
+                <tr>
+                    <td>PRINCIPAL</td>
+                    <td>Caja Mostrador</td>
+                    <td>${badgeEstado}</td>
+                    <td>${sesionCajaActiva?.abiertoPor || 'ADMINISTRADOR'}</td>
+                    <td>${fechaStr}</td>
+                    <td>${sesionCajaActiva?.fechaApertura?.substring(11, 16) || '08:00'}</td>
+                    <td>${badgeDisp}</td>
+                    <td style="text-align:right;">
+                        <button class="btn-blue-action" style="display:inline-flex; padding:4px 8px; font-size:11px;" onclick="mostrarPantalla('pantallaResumenVentas', document.querySelectorAll('.nav-link-btn')[1])"><i class="fa-solid fa-eye"></i> Total caja</button>
+                        ${btnAccionCierre}
+                    </td>
+                </tr>
+            `;
+
+            tbodyHist.innerHTML = `
+                <tr>
+                    <td>#00${sesionCajaActiva?.idCaja || 1}</td>
+                    <td>PRINCIPAL</td>
+                    <td>${sesionCajaActiva?.abiertoPor || 'ADMINISTRADOR'}</td>
+                    <td>${sesionCajaActiva?.fechaApertura || fechaStr}</td>
+                    <td>${sesionCajaActiva?.fechaCierre || 'En curso'}</td>
+                    <td style="text-align:right; font-weight:700; color:var(--primary-blue);">S/ ${dataArqueo.totalRecaudado.toFixed(2)}</td>
+                    <td>${badgeEstado}</td>
+                </tr>
+            `;
+        }
+
+        function abrirModalAperturaCaja() { document.getElementById('modalAperturaCaja').style.display = 'flex'; }
+        async function confirmarAperturaCaja() {
+            const monto = parseFloat(document.getElementById('inputMontoApertura').value) || 0;
+            const res = await fetch('/api/caja/abrir', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ monto: monto }) });
+            if (res.ok) {
+                alert('Caja abierta exitosamente.');
+                document.getElementById('modalAperturaCaja').style.display = 'none';
+                await cargarDatosCajaAdmin();
+            }
+        }
+
+        function abrirModalCierreCaja(totalActual) {
+            document.getElementById('lblCierreTotalSistema').textContent = `S/ ${totalActual.toFixed(2)}`;
+            document.getElementById('inputMontoCierre').value = totalActual.toFixed(2);
+            document.getElementById('modalCierreCaja').style.display = 'flex';
+        }
+
+        async function confirmarCierreCaja() {
+            if (!sesionCajaActiva?.idCaja) return alert('No hay sesión de caja activa.');
+            const monto = parseFloat(document.getElementById('inputMontoCierre').value) || 0;
+            const res = await fetch('/api/caja/cerrar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idCaja: sesionCajaActiva.idCaja, monto: monto }) });
+            if (res.ok) {
+                alert('Caja cerrada con éxito.');
+                document.getElementById('modalCierreCaja').style.display = 'none';
+                await cargarDatosCajaAdmin();
+            }
+        }
+
+        /* POS VENTA RÁPIDA */
+        function renderizarCatalogoPOS() {
+            const container = document.getElementById('catalogCardsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            const filtro = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtrados = catalogoProductos.filter(p => {
+                const matchCat = (categoriaPosSeleccionada === 'TODOS' || p.categoria === categoriaPosSeleccionada);
+                const matchTexto = p.nombre.toLowerCase().includes(filtro) ||
+                    (p.medida && p.medida.toLowerCase().includes(filtro)) ||
+                    (p.codigoOem && p.codigoOem.toLowerCase().includes(filtro)) ||
+                    p.marca.toLowerCase().includes(filtro);
+                return matchCat && matchTexto;
+            });
+
+            filtrados.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card-emite';
+                card.onclick = () => agregarProductoAlPOS(p);
+                card.innerHTML = `
+                    <div>
+                        <div class="badge-header">
+                            <span class="unit-badge">${p.marca}</span>
+                            <span class="stock-badge">${p.stock}</span>
+                        </div>
+                        <div class="prod-title">${p.nombre}</div>
+                        <div class="prod-sub">${p.medida ? p.medida + '<br>' : ''}${p.codigoOem ? 'OEM: ' + p.codigoOem : ''}</div>
+                    </div>
+                    <div class="prod-price">${p.precioVenta.toFixed(2)} PEN</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filtrarCategoriaPOS(cat) {
+            categoriaPosSeleccionada = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.includes(cat) || (cat === 'TODOS' && btn.textContent === 'Todos'));
+            });
+            renderizarCatalogoPOS();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', renderizarCatalogoPOS);
+
+        function agregarProductoAlPOS(p) {
+            if (sesionCajaActiva?.estado === 'CERRADA') {
+                return alert('Caja cerrada. Debe abrir la caja en "Gestionar caja" para vender.');
+            }
+            const item = itemsCarrito.find(i => i.idProducto === p.idProducto);
+            if (item) {
+                if (item.cantidad + 1 > p.stock) return alert('Stock insuficiente en almacén.');
+                item.cantidad++;
+            } else {
+                if (p.stock < 1) return alert('Producto sin existencias.');
+                itemsCarrito.push({ ...p, cantidad: 1 });
+            }
+            renderizarTablaPOS();
+        }
+
+        function cambiarCantPOS(id, delta) {
+            const idx = itemsCarrito.findIndex(i => i.idProducto === id);
+            if (idx !== -1) {
+                const prod = catalogoProductos.find(p => p.idProducto === id);
+                const n = itemsCarrito[idx].cantidad + delta;
+                if (n > prod.stock) return alert('Stock insuficiente.');
+                if (n <= 0) itemsCarrito.splice(idx, 1);
+                else itemsCarrito[idx].cantidad = n;
+            }
+            renderizarTablaPOS();
+        }
+
+        function renderizarTablaPOS() {
+            const tbody = document.getElementById('cartTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            let total = 0;
+
+            itemsCarrito.forEach(i => {
+                const sub = i.precioVenta * i.cantidad;
+                total += sub;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="white-space:nowrap;">
+                        <button onclick="cambiarCantPOS(${i.idProducto}, -1)" style="padding:1px 5px; cursor:pointer;">-</button>
+                        <strong style="padding:0 3px;">${i.cantidad}</strong>
+                        <button onclick="cambiarCantPOS(${i.idProducto}, 1)" style="padding:1px 5px; cursor:pointer;">+</button>
+                    </td>
+                    <td><strong>${i.nombre}</strong><br><small style="color:#64748b;">${i.medida || ''} ${i.marca}</small></td>
+                    <td style="text-align:right;">${i.precioVenta.toFixed(2)}</td>
+                    <td style="text-align:right; font-weight:700;">${sub.toFixed(2)}</td>
+                    <td style="text-align:center;"><button style="background:none; border:none; color:#ef4444; cursor:pointer;" onclick="eliminarDelPOS(${i.idProducto})"><i class="fa-solid fa-trash-can"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const gravada = total / 1.18;
+            const igv = total - gravada;
+            document.getElementById('gravadaDisplay').textContent = gravada.toFixed(2);
+            document.getElementById('igvDisplay').textContent = igv.toFixed(2);
+            document.getElementById('totalDisplay').textContent = total.toFixed(2);
+        }
+
+        function eliminarDelPOS(id) {
+            itemsCarrito = itemsCarrito.filter(i => i.idProducto !== id);
+            renderizarTablaPOS();
+        }
+
+        function actualizarTipoComprobante() {
+            const val = document.getElementById('clientDoc').value.trim();
+            const lbl = document.getElementById('docTypeLabel');
+            if (val.length === 11) {
+                lbl.textContent = "FACTURA ELECTRÓNICA (RUC)";
+                lbl.style.color = "var(--success-color)";
+            } else {
+                lbl.textContent = "BOLETA DE VENTA ELECTRÓNICA (DNI)";
+                lbl.style.color = "var(--primary-blue)";
+            }
+        }
+
+        function abrirModalCobroFinal() {
+            if (sesionCajaActiva?.estado === 'CERRADA') return alert('No puede cobrar: la caja se encuentra cerrada.');
+            if (itemsCarrito.length === 0) return alert('Agregue repuestos antes de continuar.');
+            const total = itemsCarrito.reduce((a, i) => a + (i.precioVenta * i.cantidad), 0);
+            document.getElementById('cobroModalTotalText').textContent = `S/ ${total.toFixed(2)}`;
+            document.getElementById('modalMontoRecibidoInput').value = total.toFixed(2);
+            calcularVueltoModal();
+            document.getElementById('modalCobro').style.display = 'flex';
+        }
+
+        function cerrarModalCobroFinal() { document.getElementById('modalCobro').style.display = 'none'; }
+        function cambiarMetodoPagoCobro() {
+            const m = document.getElementById('modalMetodoPagoSelect').value;
+            const input = document.getElementById('modalMontoRecibidoInput');
+            if (m !== 'EFECTIVO') {
+                const total = itemsCarrito.reduce((a, i) => a + (i.precioVenta * i.cantidad), 0);
+                input.value = total.toFixed(2);
+                input.disabled = true;
+            } else {
+                input.disabled = false;
+            }
+            calcularVueltoModal();
+        }
+
+        function calcularVueltoModal() {
+            const total = itemsCarrito.reduce((a, i) => a + (i.precioVenta * i.cantidad), 0);
+            const rec = parseFloat(document.getElementById('modalMontoRecibidoInput').value) || 0;
+            const diff = rec - total;
+            const text = document.getElementById('modalVueltoText');
+            if (diff >= 0) {
+                text.textContent = `Vuelto: S/ ${diff.toFixed(2)}`;
+                text.style.color = "var(--success-color)";
+            } else {
+                text.textContent = `Faltan: S/ ${Math.abs(diff).toFixed(2)}`;
+                text.style.color = "var(--danger-color)";
+            }
+        }
+
+        async function ejecutarVentaBackend() {
+            const total = itemsCarrito.reduce((a, i) => a + (i.precioVenta * i.cantidad), 0);
+            const rec = parseFloat(document.getElementById('modalMontoRecibidoInput').value) || total;
+            if (rec < total) return alert('Monto insuficiente.');
+
+            const ventaData = {
+                tipoComprobante: document.getElementById('clientDoc').value.trim().length === 11 ? 'FACTURA' : 'BOLETA',
+                clienteDoc: document.getElementById('clientDoc').value || '00000000',
+                placa: document.getElementById('carPlate').value || 'SIN PLACA',
+                metodoPago: document.getElementById('modalMetodoPagoSelect').value,
+                montoRecibido: rec,
+                vuelto: rec - total,
+                items: itemsCarrito.map(i => ({ idProducto: i.idProducto, cantidad: i.cantidad, precioUnitario: i.precioVenta }))
+            };
+
+            try {
+                const res = await fetch('/api/ventas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ventaData)
+                });
+                if (res.ok) {
+                    const r = await res.json();
+                    cerrarModalCobroFinal();
+                    ventasEmitidasMemoria.unshift({
+                        fecha: new Date().toLocaleString(),
+                        tipo: r.tipo,
+                        comprobante: r.comprobante,
+                        cliente: ventaData.clienteDoc,
+                        placa: ventaData.placa.toUpperCase(),
+                        metodo: ventaData.metodoPago,
+                        total: r.total,
+                        hash: r.hash
+                    });
+                    mostrarTicketFiscalEmite(ventaData, r);
+                    itemsCarrito = [];
+                    document.getElementById('clientDoc').value = '';
+                    document.getElementById('carPlate').value = '';
+                    actualizarTipoComprobante();
+                    renderizarTablaPOS();
+                    await cargarDatosServidor();
+                    cargarDatosCajaAdmin();
+                } else {
+                    alert('Error en cobro: ' + await res.text());
+                }
+            } catch (err) {
+                alert('Fallo de conexión.');
+            }
+        }
+
+        function mostrarTicketFiscalEmite(v, res) {
+            document.getElementById('ticketTipo').textContent = res.tipo + ' DE VENTA ELECTRÓNICA';
+            document.getElementById('ticketCorrelativo').textContent = res.comprobante;
+            document.getElementById('ticketFechaHora').textContent = new Date().toLocaleString();
+            document.getElementById('ticketCliente').textContent = v.clienteDoc;
+            document.getElementById('ticketPlaca').textContent = v.placa.toUpperCase();
+            document.getElementById('ticketMetodo').textContent = v.metodoPago;
+            document.getElementById('ticketGravada').textContent = `S/ ${(res.total / 1.18).toFixed(2)}`;
+            document.getElementById('ticketIgv').textContent = `S/ ${(res.total - (res.total / 1.18)).toFixed(2)}`;
+            document.getElementById('ticketTotal').textContent = `S/ ${res.total.toFixed(2)}`;
+            document.getElementById('ticketHash').textContent = res.hash;
+
+            const c = document.getElementById('ticketItemsContainer');
+            c.innerHTML = '';
+            itemsCarrito.forEach(i => {
+                const r = document.createElement('div');
+                r.className = 'ticket-item-row';
+                r.innerHTML = `<span>${i.cantidad}x ${i.nombre}</span><span>S/ ${(i.precioVenta * i.cantidad).toFixed(2)}</span>`;
+                c.appendChild(r);
+            });
+            document.getElementById('modalTicket').style.display = 'flex';
+        }
+
+        /* COMPROBANTES */
+        function cargarComprobantesLista() {
+            const tbody = document.getElementById('comprobantesTableBody');
+            tbody.innerHTML = '';
+            if (ventasEmitidasMemoria.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:18px; color:#64748b;">Comprobantes sincronizados en MySQL. Realice una venta rápida para visualizarla aquí.</td></tr>`;
+                return;
+            }
+            ventasEmitidasMemoria.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.fecha}</td>
+                    <td><strong>${v.tipo}</strong></td>
+                    <td style="color:var(--primary-blue); font-weight:700;">${v.comprobante}</td>
+                    <td>${v.cliente}</td>
+                    <td><span style="background:#f1f5f9; padding:2px 6px; border-radius:3px;">${v.placa}</span></td>
+                    <td>${v.metodo}</td>
+                    <td style="text-align:right; font-weight:800;">S/ ${v.total.toFixed(2)}</td>
+                    <td style="text-align:center;"><small style="font-size:9px; color:#047857;">${v.hash.substring(0, 14)}...</small></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* MARCAS (CARGA Y GUARDADO REAL) */
+async function renderizarTablaMarcas() {
+    const tbody = document.getElementById('marcasTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando marcas...</td></tr>';
+    
+    try {
+        const res = await fetch('/api/marcas');
+        if (!res.ok) {
+            throw new Error('Error al conectar con el servidor: ' + res.status);
+        }
+        
+        const marcas = await res.json();
+        tbody.innerHTML = '';
+
+        if (!marcas || marcas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay marcas registradas.</td></tr>';
+            return;
+        }
+
+        marcas.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${m.idMarca || m.id || '-'}</td>
+                <td><strong>${m.nombre}</strong></td>
+                <td>${m.totalRepuestos !== undefined ? m.totalRepuestos : 0}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarMarca(${m.idMarca || m.id})">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error('Error al cargar marcas:', error);
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Error al cargar marcas desde el servidor.</td></tr>';
+    }
+}
+
+// Función para registrar nueva marca vinculada a tu botón "Guardar Marca"
+// Guardar Marca (coincide con tu formulario: onsubmit="guardarMarca(event)")
+async function guardarMarca(event) {
+    if (event) event.preventDefault(); // Evita que la página se recargue
+
+    const input = document.getElementById('inputNombreMarca');
+    const nombre = input ? input.value.trim() : '';
+
+    if (!nombre) {
+        alert('Por favor, escribe el nombre de la marca.');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/marcas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nombre })
+        });
+
+        if (res.ok) {
+            alert('Marca registrada exitosamente');
+            if (input) input.value = '';
+            // Cerrar el modal
+            document.getElementById('modalMarca').style.display = 'none';
+            // Recargar la tabla
+            renderizarTablaMarcas();
+        } else {
+            const errorMsg = await res.text();
+            alert('Error al registrar: ' + errorMsg);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error de conexión con el servidor al registrar la marca.');
+    }
+}
+
+// Eliminar Marca
+async function eliminarMarca(idMarca) {
+    if (!confirm('¿Deseas eliminar esta marca?')) return;
+
+    try {
+        const res = await fetch(`/api/marcas/${idMarca}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            alert('Marca eliminada correctamente');
+            renderizarTablaMarcas();
+        } else {
+            const msg = await res.text();
+            alert('No se pudo eliminar: ' + msg);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error de conexión con el servidor.');
+    }
+}
+
+        /* CATEGORÍAS (CARGA Y GUARDADO REAL) */
+        /* CATEGORÍAS (CARGA Y GUARDADO REAL) */
+async function renderizarTablaCategorias() {
+    const tbody = document.getElementById('categoriasTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando categorías...</td></tr>';
+
+    try {
+        const res = await fetch('/api/categorias');
+        if (!res.ok) throw new Error('Error al consultar: ' + res.status);
+
+        const categorias = await res.json();
+        tbody.innerHTML = '';
+
+        if (!categorias || categorias.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay categorías registradas.</td></tr>';
+            return;
+        }
+
+        categorias.forEach(c => {
+            const tr = document.createElement('tr');
+            const id = c.idCategoria || c.id_categoria || c.id;
+            const total = c.totalRepuestos !== undefined ? c.totalRepuestos : 0;
+
+            tr.innerHTML = `
+                <td><strong>${c.nombre}</strong></td>
+                <td>General</td>
+                <td>${total}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarCategoria(${id})">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Error al cargar categorías desde el servidor.</td></tr>';
+    }
+}
+
+async function guardarCategoria(event) {
+    if (event) event.preventDefault();
+
+    const input = document.getElementById('inputNombreCategoria');
+    const nombre = input ? input.value.trim() : '';
+
+    if (!nombre) {
+        alert('Por favor ingrese el nombre de la categoría.');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/categorias', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nombre })
+        });
+
+        if (res.ok) {
+            alert('Categoría registrada con éxito');
+            if (input) input.value = '';
+            document.getElementById('modalCategoria').style.display = 'none';
+            renderizarTablaCategorias();
+        } else {
+            const err = await res.text();
+            alert('Error: ' + err);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error de conexión al guardar categoría.');
+    }
+}
+
+async function eliminarCategoria(idCategoria) {
+    if (!confirm('¿Deseas eliminar esta categoría?')) return;
+
+    try {
+        const res = await fetch(`/api/categorias/${idCategoria}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            alert('Categoría eliminada');
+            renderizarTablaCategorias();
+        } else {
+            const msg = await res.text();
+            alert('No se pudo eliminar: ' + msg);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error de conexión al eliminar categoría.');
+    }
+}
+
+        /* PRODUCTOS EN ALMACÉN (ACCIONES EDITAR Y ELIMINAR) */
+        function renderizarTablaProductosAdmin() {
+            const tbody = document.getElementById('adminProductsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const filtro = (document.getElementById('adminFilterInput')?.value || '').toLowerCase();
+
+            const filtrados = catalogoProductos.filter(p => {
+                return p.nombre.toLowerCase().includes(filtro) ||
+                    (p.codigoOem && p.codigoOem.toLowerCase().includes(filtro)) ||
+                    (p.medida && p.medida.toLowerCase().includes(filtro)) ||
+                    p.categoria.toLowerCase().includes(filtro) ||
+                    p.marca.toLowerCase().includes(filtro);
+            });
+
+            filtrados.forEach((p, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td><strong>${p.codigoOem || 'N/A'}</strong></td>
+                    <td><strong>${p.nombre}</strong><br><small style="color:#64748b;">${p.medida || ''} - ${p.marca}</small></td>
+                    <td>PRODUCTO</td>
+                    <td>UNID</td>
+                    <td>PEN</td>
+                    <td>${p.precioVenta.toFixed(2)}</td>
+                    <td style="font-weight:700; color:#047857;">${p.stock}</td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <button class="btn-blue-action" style="padding:4px 8px; font-size:11px; display:inline-flex;" onclick="abrirModalEditarProducto(${p.idProducto})" title="Editar repuesto"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-red-action" onclick="eliminarProductoAdmin(${p.idProducto}, '${p.nombre}')" title="Eliminar repuesto"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function abrirModalNuevoProducto() {
+            document.getElementById('modalProductoHeaderTitulo').innerHTML = `<i class="fa-solid fa-box" style="color:var(--primary-blue);"></i> Registrar Producto`;
+            document.getElementById('btnGuardarProdModal').textContent = "Guardar Repuesto";
+            document.getElementById('npIdProductoEditar').value = "";
+            document.getElementById('npNombre').value = "";
+            document.getElementById('npCategoria').value = "";
+            document.getElementById('npMarca').value = "";
+            document.getElementById('npMedida').value = "";
+            document.getElementById('npOem').value = "";
+            document.getElementById('npPrecioCompra').value = "";
+            document.getElementById('npPrecioVenta').value = "";
+            document.getElementById('npStock').value = "";
+            document.getElementById('modalNuevoProducto').style.display = 'flex';
+        }
+
+        function abrirModalEditarProducto(id) {
+            const p = catalogoProductos.find(item => item.idProducto === id);
+            if (!p) return;
+            document.getElementById('modalProductoHeaderTitulo').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color:var(--primary-blue);"></i> Editar Producto #${id}`;
+            document.getElementById('btnGuardarProdModal').textContent = "Actualizar Cambios";
+            document.getElementById('npIdProductoEditar').value = p.idProducto;
+            document.getElementById('npNombre').value = p.nombre;
+            document.getElementById('npCategoria').value = p.categoria;
+            document.getElementById('npMarca').value = p.marca;
+            document.getElementById('npMedida').value = p.medida || '';
+            document.getElementById('npOem').value = p.codigoOem || '';
+            document.getElementById('npPrecioCompra').value = p.precioCompra;
+            document.getElementById('npPrecioVenta').value = p.precioVenta;
+            document.getElementById('npStock').value = p.stock;
+            document.getElementById('npStockMinimo').value = p.stockMinimo || 3;
+            document.getElementById('modalNuevoProducto').style.display = 'flex';
+        }
+
+        function cerrarModalNuevoProducto() { document.getElementById('modalNuevoProducto').style.display = 'none'; }
+
+        async function guardarProductoFormulario(e) {
+            e.preventDefault();
+            const idEditar = document.getElementById('npIdProductoEditar').value;
+            const productoData = {
+                nombre: document.getElementById('npNombre').value.trim(),
+                categoria: document.getElementById('npCategoria').value.trim(),
+                marca: document.getElementById('npMarca').value.trim(),
+                medida: document.getElementById('npMedida').value.trim(),
+                codigoOem: document.getElementById('npOem').value.trim(),
+                precioCompra: parseFloat(document.getElementById('npPrecioCompra').value) || 0,
+                precioVenta: parseFloat(document.getElementById('npPrecioVenta').value) || 0,
+                stock: parseInt(document.getElementById('npStock').value) || 0,
+                stockMinimo: parseInt(document.getElementById('npStockMinimo').value) || 3
+            };
+
+            const url = idEditar ? `/api/productos/${idEditar}` : '/api/productos';
+            const metodo = idEditar ? 'PUT' : 'POST';
+
+            const res = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(productoData) });
+            if (res.ok) {
+                alert(idEditar ? 'Repuesto actualizado correctamente.' : 'Repuesto registrado en almacén.');
+                cerrarModalNuevoProducto();
+                await cargarDatosServidor();
+            } else {
+                alert('Error al procesar: ' + await res.text());
+            }
+        }
+
+        async function eliminarProductoAdmin(id, nombre) {
+            if (!confirm(`¿Está seguro de eliminar el repuesto "${nombre}"? Esta acción borrará sus movimientos de prueba.`)) {
+                return;
+            }
+            try {
+                const res = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert('Producto eliminado exitosamente.');
+                    await cargarDatosServidor();
+                } else {
+                    alert('Error al eliminar: ' + await res.text());
+                }
+            } catch (e) {
+                alert('Fallo de conexión.');
+            }
+        }
+
+        /* CLIENTE */
+        function abrirModalCliente() { document.getElementById('modalCliente').style.display = 'flex'; }
+        function cerrarModalCliente() { document.getElementById('modalCliente').style.display = 'none'; }
+        function guardarClienteLocal(e) {
+            e.preventDefault();
+            const doc = document.getElementById('modalDocNumero').value.trim();
+            document.getElementById('clientDoc').value = doc;
+            actualizarTipoComprobante();
+            cerrarModalCliente();
+            alert('Cliente vinculado a la orden de venta.');
+        }
+
+        /* HISTORIAL PLACA */
+        async function abrirModalHistorialPlaca() {
+            const placa = document.getElementById('carPlate').value.trim();
+            if (!placa) return alert('Ingresa una placa en la casilla superior de venta rápida.');
+            const res = await fetch(`/api/historial/${encodeURIComponent(placa)}`);
+            const datos = await res.json();
+            const tbody = document.getElementById('historialPlacaBody');
+            tbody.innerHTML = '';
+            document.getElementById('historialPlacaTitle').textContent = `Historial Técnico: Placa ${placa.toUpperCase()}`;
+
+            datos.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.fecha.substring(0, 16)}</td>
+                    <td><strong>${d.repuesto}</strong></td>
+                    <td>${d.medida || '-'}</td>
+                    <td>${d.cantidad}</td>
+                    <td style="font-weight:700;">S/ ${(d.precio * d.cantidad).toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('modalHistorialPlaca').style.display = 'flex';
+        }
+
+        function exportarProductosCSV() {
+            if (!catalogoProductos.length) return alert('No hay productos para exportar.');
+            let csv = "\uFEFFCodigo,Nombre,Marca,Medida,Precio,Stock\n";
+            catalogoProductos.forEach(p => {
+                csv += `"${p.codigoOem || ''}","${p.nombre}","${p.marca}","${p.medida || ''}",${p.precioVenta},${p.stock}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Productos_Almacen.csv`;
+            a.click();
+        }
+
+        /* ATAJOS DE TECLADO */
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F2') {
+                e.preventDefault();
+                mostrarPantalla('pantallaPos', document.querySelectorAll('.nav-link-btn')[0]);
+                document.getElementById('searchInput').focus();
+            } else if (e.key === 'F4') {
+                e.preventDefault();
+                abrirModalCobroFinal();
+            }
+        });
+
+        // Inicio
+        cargarDatosServidor();
+    </script>
+</body>
+</html>
