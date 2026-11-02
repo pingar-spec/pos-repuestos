@@ -1,0 +1,199 @@
+/* ===================================================
+   VARIABLES DE COLOR Y BASE VISUAL PROFESIONAL
+   =================================================== */
+:root {
+  --bg-main: #0b1120;        /* Fondo oscuro base */
+  --bg-surface: #0f172a;     /* Fondo de paneles y menú lateral */
+  --bg-card: #1e293b;        /* Fondo de tarjetas y bloques */
+  --border-color: #334155;   /* Bordes sutiles de separación */
+  --text-main: #f8fafc;      /* Texto principal blanco */
+  --text-muted: #94a3b8;     /* Texto secundario gris */
+  --accent-green: #10b981;   /* Verde esmeralda para cobro y éxito */
+  --accent-blue: #3b82f6;    /* Azul para módulos activos */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ===================================================
+   MENÚ LATERAL (SIDEBAR COMERCIAL)
+   =================================================== */
+.sidebar {
+  width: 250px;
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 18px 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 14px;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.brand-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.user-badge {
+  background-color: var(--bg-card);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.user-badge strong {
+  color: var(--text-main);
+  display: block;
+}
+
+.menu-group {
+  margin-bottom: 16px;
+}
+
+.group-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 4px 12px;
+  letter-spacing: 0.8px;
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.menu-item:hover {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+}
+
+.menu-item.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+/* ===================================================
+   ÁREA DE CONTENIDO Y APARTADOS INDEPENDIENTES
+   =================================================== */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.top-header {
+  height: 56px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.header-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title-box h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.system-status {
+  font-size: 11px;
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.view-container {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* Control para mostrar solo un apartado a la vez */
+.app-view {
+  display: none;
+}
+
+.app-view.active-view {
+  display: block;
+}
+
+.placeholder-card {
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
