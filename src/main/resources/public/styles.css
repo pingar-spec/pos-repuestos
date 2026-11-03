@@ -626,7 +626,7 @@ body {
 }
 
 /* ===================================================
-   MÓDULO: VENTAS DEL DÍA (HISTORIAL & MÉTRICAS)
+   MÓDULO: VENTAS DEL DÍA & COMPROBANTES SUNAT
    =================================================== */
 .history-layout {
   padding: 24px;
@@ -739,6 +739,35 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+/* Distintivos oficiales de estado SUNAT */
+.badge-status {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-status.aceptado {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-status.pendiente {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-status.rechazado {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
 .btn-action-table {
   background-color: #1e293b;
   border: 1px solid var(--border-color);
@@ -757,6 +786,44 @@ body {
 .btn-action-table:hover {
   background-color: var(--accent-blue);
   border-color: var(--accent-blue);
+}
+
+/* Botones específicos de descarga de archivos tributarios */
+.file-actions-group {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-file-xml {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--accent-blue);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-file-xml:hover {
+  background-color: var(--accent-blue);
+  color: #fff;
+}
+
+.btn-file-cdr {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--accent-green);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-file-cdr:hover {
+  background-color: var(--accent-green);
+  color: #fff;
 }
 
 /* ===================================================

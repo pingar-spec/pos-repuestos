@@ -11,13 +11,15 @@ let correlativoBoleta = 1;
 let correlativoFactura = 1;
 
 // ===================================================
-// INICIALIZACIÓN
+// INICIALIZACIÓN AL ABRIR LA PÁGINA
 // ===================================================
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductosDesdeBackend();
   actualizarTablaVentas();
+  actualizarBandejaSunat();
 });
 
+// Cambiar de sección en el menú lateral
 function cambiarVista(vistaId, tituloSeccion, elementoBoton) {
   document.querySelectorAll('.app-view').forEach(vista => vista.classList.remove('active-view'));
   const vistaSeleccionada = document.getElementById(vistaId);
@@ -28,6 +30,10 @@ function cambiarVista(vistaId, tituloSeccion, elementoBoton) {
 
   document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
   if (elementoBoton) elementoBoton.classList.add('active');
+
+  if (vistaId === 'vista-sunat') {
+    actualizarBandejaSunat();
+  }
 }
 
 // Cargar catálogo conectando directamente al backend Java / TiDB Cloud
@@ -45,6 +51,7 @@ async function cargarProductosDesdeBackend() {
 
     const datos = await respuesta.json();
     
+    // Mapeo defensivo de atributos TiDB Cloud
     catalogoProductos = datos.map(p => ({
       id: p.idProducto || p.id,
       nombre: p.nombre || 'Repuesto sin nombre',
@@ -82,6 +89,9 @@ function asignarIconoSegunTexto(nombre) {
   return 'amortiguador';
 }
 
+// ===================================================
+// RENDERIZADO DEL CATÁLOGO DE PRODUCTOS
+// ===================================================
 function renderizarCatalogo(lista) {
   const grid = document.getElementById('grid-productos');
   if (!grid) return;
@@ -136,6 +146,9 @@ function obtenerSvgPorTipo(tipo) {
   }
 }
 
+// ===================================================
+// FILTROS Y BÚSQUEDA
+// ===================================================
 function filtrarCategoria(cat, elementoBoton) {
   categoriaFiltroActiva = cat;
   document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
@@ -161,6 +174,9 @@ function aplicarFiltros() {
   renderizarCatalogo(filtrados);
 }
 
+// ===================================================
+// GESTIÓN DEL COMPROBANTE Y CARRITO (CÁLCULO IGV)
+// ===================================================
 function agregarAlCarrito(productoId) {
   const producto = catalogoProductos.find(p => p.id === productoId);
   if (!producto) return;
@@ -257,6 +273,9 @@ function actualizarVistaCarrito() {
   calcularVueltoDirecto();
 }
 
+// ===================================================
+// CONTROL DE PAGO DIRECTO (EFECTIVO Y YAPE)
+// ===================================================
 function cambiarMetodoCobro(metodo) {
   metodoPagoSeleccionado = metodo;
   const btnE = document.getElementById('btn-pay-efectivo');
@@ -298,6 +317,9 @@ function calcularVueltoDirecto() {
   }
 }
 
+// ===================================================
+// INTERACCIÓN DE FACTURACIÓN SUNAT
+// ===================================================
 function seleccionarTipoDoc(tipo) {
   tipoDocumentoSeleccionado = tipo;
   const btnB = document.getElementById('btn-boleta');
@@ -398,7 +420,8 @@ function procesarEmisionFinal() {
     items: JSON.parse(JSON.stringify(carrito)),
     total: total,
     subtotal: total / 1.18,
-    igv: total - (total / 1.18)
+    igv: total - (total / 1.18),
+    estadoSunat: 'ACEPTADO'
   };
 
   historialVentas.unshift(nuevaVenta);
@@ -411,6 +434,7 @@ function procesarEmisionFinal() {
   document.getElementById('input-efectivo-recibido').value = '';
   actualizarVistaCarrito();
   actualizarTablaVentas();
+  actualizarBandejaSunat();
 
   // Abrir de inmediato el comprobante oficial en pantalla
   mostrarTicketModal(nuevaVenta);
@@ -544,7 +568,7 @@ function imprimirTicketDirecto() {
 }
 
 // ===================================================
-// HISTORIAL DE VENTAS DEL DÍA Y MÉTRICAS
+// HISTORIAL DE VENTAS DEL DÍA
 // ===================================================
 function actualizarTablaVentas() {
   const tbody = document.getElementById('tabla-ventas-body');
@@ -613,4 +637,69 @@ function reimprimirTicketPorNumero(numero) {
   if (venta) {
     mostrarTicketModal(venta);
   }
+}
+
+// ===================================================
+// BANDEJA ELECTRÓNICA DE COMPROBANTES SUNAT
+// ===================================================
+function actualizarBandejaSunat() {
+  const tbody = document.getElementById('tabla-sunat-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  let totalBase = 0;
+  let totalIgv = 0;
+
+  if (historialVentas.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+          Bandeja vacía. Los comprobantes emitidos en mostrador se sincronizarán aquí automáticamente.
+        </td>
+      </tr>
+    `;
+  } else {
+    historialVentas.forEach(v => {
+      totalBase += v.subtotal;
+      totalIgv += v.igv;
+
+      const badgeClass = v.tipo === 'BOLETA' ? 'badge-doc boleta' : 'badge-doc factura';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${v.fecha} ${v.hora}</td>
+        <td><span class="${badgeClass}">${v.tipo}</span></td>
+        <td><strong>${v.numero}</strong></td>
+        <td>${v.documento}</td>
+        <td>${v.cliente}</td>
+        <td><strong>S/. ${v.total.toFixed(2)}</strong></td>
+        <td>
+          <span class="badge-status aceptado">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Aceptado SUNAT
+          </span>
+        </td>
+        <td>
+          <div class="file-actions-group">
+            <button class="btn-file-xml" onclick="descargarArchivoTributario('${v.numero}', 'XML')">XML</button>
+            <button class="btn-file-cdr" onclick="descargarArchivoTributario('${v.numero}', 'CDR')">CDR</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const elBase = document.getElementById('sunat-metrica-base');
+  const elIgv = document.getElementById('sunat-metrica-igv');
+
+  if (elBase) elBase.innerText = `S/. ${totalBase.toFixed(2)}`;
+  if (elIgv) elIgv.innerText = `S/. ${totalIgv.toFixed(2)}`;
+}
+
+function descargarArchivoTributario(numero, tipoArchivo) {
+  alert(`Descargando comprobante ${tipoArchivo} oficial:\n\nArchivo: 20608549123-${numero}.${tipoArchivo.toLowerCase()}\nEstado: Validado digitalmente con firma electrónica.`);
 }

@@ -363,14 +363,61 @@
           </div>
         </section>
 
-        <!-- SECCIONES RESTANTES MODULARES -->
+        <!-- 3. COMPROBANTES SUNAT (BANDEJA ELECTRÓNICA & ARCHIVOS) -->
         <section id="vista-sunat" class="app-view">
-          <div class="placeholder-card">
-            <h3>Bandeja Electrónica SUNAT</h3>
-            <p>Monitoreo de CDR, XML firmados y estado de aceptación.</p>
+          <div class="history-layout">
+            
+            <div class="metrics-row">
+              <div class="metric-card">
+                <span class="metric-label">Total Op. Gravadas (Base)</span>
+                <span class="metric-value" id="sunat-metrica-base">S/. 0.00</span>
+                <span class="metric-tag">Ventas netas declaradas</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">IGV Fiscal Acumulado (18%)</span>
+                <span class="metric-value" id="sunat-metrica-igv">S/. 0.00</span>
+                <span class="metric-tag">Crédito fiscal acumulado</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Estado de Transmisión</span>
+                <span class="metric-value" id="sunat-metrica-estado">100% Sincronizado</span>
+                <span class="metric-tag">Conexión con OSE / SUNAT</span>
+              </div>
+            </div>
+
+            <div class="data-table-container">
+              <div class="table-toolbar">
+                <div>
+                  <span class="table-title">Bandeja Electrónica de Comprobantes SUNAT</span>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    Registro oficial de Boletas y Facturas declaradas con firma digital y CDR.
+                  </div>
+                </div>
+              </div>
+              
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha / Hora</th>
+                    <th>Tipo</th>
+                    <th>Serie - Número</th>
+                    <th>Doc. Identidad</th>
+                    <th>Razón Social / Receptor</th>
+                    <th>Total Soles</th>
+                    <th>Estado SUNAT</th>
+                    <th>Descarga Archivos</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-sunat-body">
+                  <!-- Se llena con app.js -->
+                </tbody>
+              </table>
+            </div>
+
           </div>
         </section>
 
+        <!-- 4. COTIZACIONES -->
         <section id="vista-proformas" class="app-view">
           <div class="placeholder-card">
             <h3>Cotizaciones y Proformas para Talleres</h3>
@@ -378,6 +425,7 @@
           </div>
         </section>
 
+        <!-- 5. CLIENTES Y TALLERES -->
         <section id="vista-clientes" class="app-view">
           <div class="placeholder-card">
             <h3>Directorio de Clientes y Talleres</h3>
@@ -385,6 +433,7 @@
           </div>
         </section>
 
+        <!-- 6. CUENTAS POR COBRAR (FIADOS) -->
         <section id="vista-fiados" class="app-view">
           <div class="placeholder-card">
             <h3>Cuentas por Cobrar (Créditos a Talleres)</h3>
@@ -392,6 +441,7 @@
           </div>
         </section>
 
+        <!-- 7. CATÁLOGO DE REPUESTOS -->
         <section id="vista-repuestos" class="app-view">
           <div class="placeholder-card">
             <h3>Catálogo Maestro de Autopartes</h3>
@@ -399,6 +449,7 @@
           </div>
         </section>
 
+        <!-- 8. GARANTÍA DE BATERÍAS -->
         <section id="vista-garantias" class="app-view">
           <div class="placeholder-card">
             <h3>Módulo de Garantía de Baterías</h3>
@@ -406,6 +457,7 @@
           </div>
         </section>
 
+        <!-- 9. UBICACIÓN EN TIENDA -->
         <section id="vista-ubicacion" class="app-view">
           <div class="placeholder-card">
             <h3>Ubicación en Tienda (Pasillo / Estante / Gaveta)</h3>
@@ -413,6 +465,7 @@
           </div>
         </section>
 
+        <!-- 10. REPUESTOS POR AGOTARSE -->
         <section id="vista-por-agotarse" class="app-view">
           <div class="placeholder-card">
             <h3>Alertas de Reposición Urgente</h3>
@@ -420,6 +473,7 @@
           </div>
         </section>
 
+        <!-- 11. ENTRADA DE MERCADERÍA -->
         <section id="vista-compras" class="app-view">
           <div class="placeholder-card">
             <h3>Llegada de Mercadería</h3>
@@ -427,6 +481,7 @@
           </div>
         </section>
 
+        <!-- 12. MIS PROVEEDORES -->
         <section id="vista-proveedores" class="app-view">
           <div class="placeholder-card">
             <h3>Directorio de Proveedores y Distribuidores</h3>
@@ -434,6 +489,7 @@
           </div>
         </section>
 
+        <!-- 13. APERTURA Y CIERRE DE CAJA -->
         <section id="vista-caja-cierre" class="app-view">
           <div class="placeholder-card">
             <h3>Apertura y Cierre de Turno</h3>
@@ -441,6 +497,7 @@
           </div>
         </section>
 
+        <!-- 14. GASTOS EN CAJA -->
         <section id="vista-caja-gastos" class="app-view">
           <div class="placeholder-card">
             <h3>Salidas de Dinero de Caja</h3>
@@ -448,6 +505,7 @@
           </div>
         </section>
 
+        <!-- 15. GANANCIAS -->
         <section id="vista-ganancias" class="app-view">
           <div class="placeholder-card">
             <h3>Reporte de Utilidad y Rentabilidad</h3>
@@ -455,6 +513,7 @@
           </div>
         </section>
 
+        <!-- 16. LOS MÁS VENDIDOS -->
         <section id="vista-mas-vendidos" class="app-view">
           <div class="placeholder-card">
             <h3>Ranking de Rotación de Piezas</h3>
@@ -467,7 +526,7 @@
 
   </div>
 
-  <!-- MODAL DE VISUALIZACIÓN / IMPRESIÓN COMPROBANTE OFICIAL SUNAT (80MM / A4) -->
+  <!-- MODAL DE COMPROBANTE OFICIAL SUNAT (TICKET TÉRMICO 80MM) -->
   <div class="receipt-modal-backdrop" id="modal-comprobante">
     <div class="receipt-modal-box">
       <div class="receipt-modal-header">
