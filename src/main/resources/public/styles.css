@@ -626,7 +626,7 @@ body {
 }
 
 /* ===================================================
-   MÓDULO: VENTAS DEL DÍA & COMPROBANTES SUNAT
+   MÓDULOS DE TABLAS: VENTAS, SUNAT Y COTIZACIONES
    =================================================== */
 .history-layout {
   padding: 24px;
@@ -739,7 +739,13 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* Distintivos oficiales de estado SUNAT */
+.badge-doc.proforma {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--accent-purple);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Distintivos oficiales de estado SUNAT y Vigencia */
 .badge-status {
   padding: 3px 8px;
   border-radius: 4px;
@@ -762,10 +768,10 @@ body {
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
-.badge-status.rechazado {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: var(--accent-red);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+.badge-status.vigente {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .btn-action-table {
@@ -788,7 +794,17 @@ body {
   border-color: var(--accent-blue);
 }
 
-/* Botones específicos de descarga de archivos tributarios */
+.btn-action-table.convert {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--accent-green);
+}
+
+.btn-action-table.convert:hover {
+  background-color: var(--accent-green);
+  color: #fff;
+}
+
 .file-actions-group {
   display: flex;
   gap: 6px;
@@ -826,8 +842,28 @@ body {
   color: #fff;
 }
 
+/* Botón Crear Cotización en cabecera de tabla */
+.btn-primary-action {
+  background-color: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary-action:hover {
+  background-color: #2563eb;
+}
+
 /* ===================================================
-   MODAL DE COMPROBANTE OFICIAL SUNAT (TICKET TÉRMICO)
+   MODAL DE COMPROBANTE OFICIAL SUNAT & PROFORMAS
    =================================================== */
 .receipt-modal-backdrop {
   display: none;

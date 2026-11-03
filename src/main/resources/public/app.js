@@ -4,11 +4,13 @@
 let catalogoProductos = [];
 let carrito = [];
 let historialVentas = [];
+let historialCotizaciones = [];
 let tipoDocumentoSeleccionado = 'BOLETA';
 let categoriaFiltroActiva = 'TODOS';
 let metodoPagoSeleccionado = 'EFECTIVO';
 let correlativoBoleta = 1;
 let correlativoFactura = 1;
+let correlativoCotizacion = 1;
 
 // ===================================================
 // INICIALIZACIÓN AL ABRIR LA PÁGINA
@@ -17,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarProductosDesdeBackend();
   actualizarTablaVentas();
   actualizarBandejaSunat();
+  actualizarTablaCotizaciones();
 });
 
 // Cambiar de sección en el menú lateral
@@ -33,6 +36,8 @@ function cambiarVista(vistaId, tituloSeccion, elementoBoton) {
 
   if (vistaId === 'vista-sunat') {
     actualizarBandejaSunat();
+  } else if (vistaId === 'vista-proformas') {
+    actualizarTablaCotizaciones();
   }
 }
 
@@ -450,8 +455,14 @@ function mostrarTicketModal(venta) {
 
   if (!modal || !contenedor) return;
 
+  const esCotizacion = venta.tipo === 'COTIZACION';
   const esFactura = venta.tipo === 'FACTURA';
-  tituloModal.innerText = esFactura ? 'Factura Electrónica SUNAT' : 'Boleta de Venta Electrónica';
+
+  if (esCotizacion) {
+    tituloModal.innerText = 'Cotización / Proforma de Repuestos';
+  } else {
+    tituloModal.innerText = esFactura ? 'Factura Electrónica SUNAT' : 'Boleta de Venta Electrónica';
+  }
 
   let itemsHtml = '';
   venta.items.forEach(it => {
@@ -466,6 +477,23 @@ function mostrarTicketModal(venta) {
     `;
   });
 
+  let encabezadoDocHtml = '';
+  if (esCotizacion) {
+    encabezadoDocHtml = `
+      <div class="receipt-box-doc" style="border-style: solid; background-color: #f8fafc;">
+        COTIZACIÓN / PROFORMA<br>
+        ${venta.numero}
+      </div>
+    `;
+  } else {
+    encabezadoDocHtml = `
+      <div class="receipt-box-doc">
+        ${esFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA'}<br>
+        ${venta.numero}
+      </div>
+    `;
+  }
+
   contenedor.innerHTML = `
     <div class="receipt-company-info">
       <div class="receipt-company-title">AUTOPARTES & SERVICIOS PIERO</div>
@@ -474,31 +502,33 @@ function mostrarTicketModal(venta) {
       <div>Tel: 987 654 321</div>
     </div>
 
-    <div class="receipt-box-doc">
-      ${esFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA'}<br>
-      ${venta.numero}
-    </div>
+    ${encabezadoDocHtml}
 
     <div class="receipt-line">
       <span>Fecha de Emisión:</span>
       <strong>${venta.fecha}</strong>
     </div>
+    ${esCotizacion ? `
+    <div class="receipt-line">
+      <span>Válido Hasta:</span>
+      <strong style="color: #2563eb;">${venta.vencimiento} (7 días)</strong>
+    </div>` : `
     <div class="receipt-line">
       <span>Hora de Emisión:</span>
       <strong>${venta.hora}</strong>
-    </div>
+    </div>`}
     <div class="receipt-line">
-      <span>Cajero:</span>
+      <span>Atendido por:</span>
       <span>Piero Inga</span>
     </div>
     <div class="receipt-divider"></div>
 
     <div class="receipt-line">
-      <span>${esFactura ? 'Razón Social:' : 'Cliente:'}</span>
+      <span>${esFactura ? 'Razón Social:' : (esCotizacion ? 'Cliente / Taller:' : 'Cliente:')}</span>
       <strong>${venta.cliente}</strong>
     </div>
     <div class="receipt-line">
-      <span>${esFactura ? 'RUC:' : 'DNI:'}</span>
+      <span>${esFactura ? 'RUC:' : 'Doc. Identidad:'}</span>
       <span>${venta.documento}</span>
     </div>
     ${venta.placa ? `
@@ -506,10 +536,12 @@ function mostrarTicketModal(venta) {
       <span>Placa Vehículo:</span>
       <span>${venta.placa}</span>
     </div>` : ''}
+
+    ${!esCotizacion ? `
     <div class="receipt-line">
       <span>Forma de Pago:</span>
       <strong>${venta.metodo.toUpperCase()} (Contado)</strong>
-    </div>
+    </div>` : ''}
 
     <div class="receipt-divider"></div>
 
@@ -538,21 +570,26 @@ function mostrarTicketModal(venta) {
       <span>S/. ${venta.igv.toFixed(2)}</span>
     </div>
     <div class="receipt-line" style="font-size: 14px; margin-top: 4px;">
-      <strong>IMPORTE TOTAL:</strong>
+      <strong>${esCotizacion ? 'PRESUPUESTO TOTAL:' : 'IMPORTE TOTAL:'}</strong>
       <strong>S/. ${venta.total.toFixed(2)}</strong>
     </div>
 
     <div class="receipt-divider"></div>
 
+    ${esCotizacion ? `
+    <div style="text-align: center; font-size: 10px; color: #555; margin-top: 6px; padding: 6px; border: 1px dashed #999;">
+      * DOCUMENTO INFORMATIVO NO VÁLIDO COMO COMPROBANTE DE PAGO *<br>
+      Precios garantizados por 7 días calendario o hasta agotar stock.<br>
+      Para confirmar este pedido presente el código: <strong>${venta.numero}</strong>
+    </div>` : `
     <div class="receipt-qr-placeholder">
       [ CÓDIGO QR<br>FISCAL SUNAT ]
     </div>
-
     <div style="text-align: center; font-size: 10px; color: #444; margin-top: 6px;">
       Representación impresa de la ${esFactura ? 'Factura' : 'Boleta'} Electrónica.<br>
       Autorizado mediante resolución SUNAT.<br>
       ¡Gracias por su compra!
-    </div>
+    </div>`}
   `;
 
   modal.classList.add('active');
@@ -702,4 +739,150 @@ function actualizarBandejaSunat() {
 
 function descargarArchivoTributario(numero, tipoArchivo) {
   alert(`Descargando comprobante ${tipoArchivo} oficial:\n\nArchivo: 20608549123-${numero}.${tipoArchivo.toLowerCase()}\nEstado: Validado digitalmente con firma electrónica.`);
+}
+
+// ===================================================
+// GESTIÓN DE COTIZACIONES / PROFORMAS
+// ===================================================
+function irACrearCotizacion() {
+  const btnPos = document.querySelector('.menu-item');
+  cambiarVista('vista-pos', 'Venta Rápida', btnPos);
+  alert('Para armar una cotización, añade repuestos a la lista y haz clic en el botón "+ Cotizar".');
+}
+
+function crearCotizacionDesdeCarrito() {
+  if (carrito.length === 0) {
+    alert('Agrega al menos un repuesto para generar la cotización.');
+    return;
+  }
+
+  const cliente = (document.getElementById('input-nombre').value || '').trim();
+  if (!cliente) {
+    alert('Por favor ingresa el nombre del cliente o taller para la proforma.');
+    return;
+  }
+
+  const total = obtenerTotalCarrito();
+  const doc = (document.getElementById('input-doc').value || '00000000').trim();
+  const placa = (document.getElementById('input-placa').value || '').trim();
+
+  const ahora = new Date();
+  const dia = String(ahora.getDate()).padStart(2, '0');
+  const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+  const anio = ahora.getFullYear();
+  const fechaTexto = `${dia}/${mes}/${anio}`;
+
+  const fechaVence = new Date();
+  fechaVence.setDate(ahora.getDate() + 7);
+  const venceDia = String(fechaVence.getDate()).padStart(2, '0');
+  const venceMes = String(fechaVence.getMonth() + 1).padStart(2, '0');
+  const venceAnio = fechaVence.getFullYear();
+  const venceTexto = `${venceDia}/${venceMes}/${venceAnio}`;
+
+  const numeroCot = `COT-${String(correlativoCotizacion).padStart(6, '0')}`;
+  correlativoCotizacion++;
+
+  const nuevaCotizacion = {
+    numero: numeroCot,
+    tipo: 'COTIZACION',
+    fecha: fechaTexto,
+    vencimiento: venceTexto,
+    cliente: cliente,
+    documento: doc,
+    placa: placa,
+    items: JSON.parse(JSON.stringify(carrito)),
+    total: total,
+    subtotal: total / 1.18,
+    igv: total - (total / 1.18),
+    estado: 'Vigente'
+  };
+
+  historialCotizaciones.unshift(nuevaCotizacion);
+
+  // Limpiar panel de venta
+  carrito = [];
+  document.getElementById('input-doc').value = '';
+  document.getElementById('input-nombre').value = '';
+  document.getElementById('input-placa').value = '';
+  actualizarVistaCarrito();
+  actualizarTablaCotizaciones();
+
+  // Abrir proforma para revisión o impresión
+  mostrarTicketModal(nuevaCotizacion);
+}
+
+function actualizarTablaCotizaciones() {
+  const tbody = document.getElementById('tabla-cotizaciones-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  let totalMontoCotizado = 0;
+
+  if (historialCotizaciones.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+          No hay cotizaciones registradas. Crea una desde Venta Rápida con el botón "+ Cotizar".
+        </td>
+      </tr>
+    `;
+  } else {
+    historialCotizaciones.forEach(c => {
+      totalMontoCotizado += c.total;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${c.numero}</strong></td>
+        <td>${c.fecha}</td>
+        <td><span style="color: var(--accent-blue);">${c.vencimiento}</span></td>
+        <td>${c.cliente}</td>
+        <td>${c.documento}</td>
+        <td><strong>S/. ${c.total.toFixed(2)}</strong></td>
+        <td><span class="badge-status vigente">Vigente (7d)</span></td>
+        <td>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-action-table" onclick="verCotizacionPorNumero('${c.numero}')">
+              Ver
+            </button>
+            <button class="btn-action-table convert" onclick="convertirCotizacionAVenta('${c.numero}')">
+              Convertir a Venta
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const elCant = document.getElementById('cotiza-metrica-cant');
+  const elMonto = document.getElementById('cotiza-metrica-monto');
+
+  if (elCant) elCant.innerText = `${historialCotizaciones.length}`;
+  if (elMonto) elMonto.innerText = `S/. ${totalMontoCotizado.toFixed(2)}`;
+}
+
+function verCotizacionPorNumero(numero) {
+  const cot = historialCotizaciones.find(c => c.numero === numero);
+  if (cot) {
+    mostrarTicketModal(cot);
+  }
+}
+
+function convertirCotizacionAVenta(numero) {
+  const cot = historialCotizaciones.find(c => c.numero === numero);
+  if (!cot) return;
+
+  // Cargar ítems y cliente al POS
+  carrito = JSON.parse(JSON.stringify(cot.items));
+  document.getElementById('input-nombre').value = cot.cliente;
+  document.getElementById('input-doc').value = cot.documento === '00000000' ? '' : cot.documento;
+  document.getElementById('input-placa').value = cot.placa || '';
+
+  // Cambiar vista al POS
+  const btnPos = document.querySelectorAll('.menu-item')[0];
+  cambiarVista('vista-pos', 'Venta Rápida', btnPos);
+  actualizarVistaCarrito();
+
+  alert(`¡Cotización ${numero} cargada exitosamente!\n\nLos repuestos y datos del cliente ya están en el panel de cobro listos para emitir Boleta o Factura.`);
 }

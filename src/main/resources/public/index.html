@@ -306,7 +306,10 @@
                 </div>
               </div>
 
-              <button class="btn-checkout" onclick="procesarEmisionFinal()">COBRAR / EMITIR COMPROBANTE</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-checkout" style="flex: 2;" onclick="procesarEmisionFinal()">COBRAR / EMITIR</button>
+                <button type="button" class="btn-action-table" style="flex: 1; justify-content: center; background-color: var(--bg-card);" onclick="crearCotizacionDesdeCarrito()">+ Cotizar</button>
+              </div>
             </div>
 
           </div>
@@ -417,11 +420,64 @@
           </div>
         </section>
 
-        <!-- 4. COTIZACIONES -->
+        <!-- 4. COTIZACIONES / PROFORMAS -->
         <section id="vista-proformas" class="app-view">
-          <div class="placeholder-card">
-            <h3>Cotizaciones y Proformas para Talleres</h3>
-            <p>Presupuestos previos para mecánicos.</p>
+          <div class="history-layout">
+            
+            <div class="metrics-row">
+              <div class="metric-card">
+                <span class="metric-label">Proformas Emitidas</span>
+                <span class="metric-value" id="cotiza-metrica-cant">0</span>
+                <span class="metric-tag">Presupuestos para mecánicos</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Monto Total Cotizado</span>
+                <span class="metric-value" id="cotiza-metrica-monto">S/. 0.00</span>
+                <span class="metric-tag">Potencial de venta</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Validez Estándar</span>
+                <span class="metric-value">7 Días</span>
+                <span class="metric-tag">Precios garantizados</span>
+              </div>
+            </div>
+
+            <div class="data-table-container">
+              <div class="table-toolbar">
+                <div>
+                  <span class="table-title">Cotizaciones y Proformas para Clientes y Talleres</span>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    Presupuestos preventivos sin impacto contable ni descuento de stock.
+                  </div>
+                </div>
+                <button class="btn-primary-action" onclick="irACrearCotizacion()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Nueva Cotización
+                </button>
+              </div>
+              
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>N° Proforma</th>
+                    <th>Fecha</th>
+                    <th>Vence</th>
+                    <th>Cliente / Taller</th>
+                    <th>Doc. Identidad</th>
+                    <th>Total Cotizado</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-cotizaciones-body">
+                  <!-- Se llena con app.js -->
+                </tbody>
+              </table>
+            </div>
+
           </div>
         </section>
 
@@ -526,7 +582,7 @@
 
   </div>
 
-  <!-- MODAL DE COMPROBANTE OFICIAL SUNAT (TICKET TÉRMICO 80MM) -->
+  <!-- MODAL DE COMPROBANTE OFICIAL SUNAT / PROFORMA (80MM) -->
   <div class="receipt-modal-backdrop" id="modal-comprobante">
     <div class="receipt-modal-box">
       <div class="receipt-modal-header">
