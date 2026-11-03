@@ -264,7 +264,7 @@
               <!-- Desglose tributario SUNAT -->
               <div class="tax-breakdown">
                 <div class="tax-row">
-                  <span>Subtotal</span>
+                  <span>Subtotal (Op. Gravada)</span>
                   <span id="txt-subtotal">S/. 0.00</span>
                 </div>
                 <div class="tax-row">
@@ -277,14 +277,14 @@
                 </div>
               </div>
 
-              <!-- SELECCIÓN INTEGRADA DE MÉTODO DE PAGO EN MOSTRADOR -->
+              <!-- SELECCIÓN INTEGRADA DE PAGO EN MOSTRADOR -->
               <div class="payment-method-box">
                 <div class="payment-tabs-inline">
                   <button type="button" class="pay-btn active" id="btn-pay-efectivo" onclick="cambiarMetodoCobro('EFECTIVO')">Efectivo</button>
                   <button type="button" class="pay-btn" id="btn-pay-yape" onclick="cambiarMetodoCobro('YAPE')">Yape / Plin</button>
                 </div>
 
-                <!-- Panel Efectivo: Vuelto automático -->
+                <!-- Panel Efectivo -->
                 <div id="panel-efectivo" class="pay-panel active">
                   <div class="form-group" style="margin-bottom: 6px;">
                     <label class="form-label">Efectivo recibido (S/.)</label>
@@ -296,12 +296,12 @@
                   </div>
                 </div>
 
-                <!-- Panel Yape: Confirmación rápida para hora punta -->
+                <!-- Panel Yape -->
                 <div id="panel-yape" class="pay-panel">
                   <div class="yape-notice">
-                    <span>Monto a recibir por QR:</span>
+                    <span>Monto a transferir:</span>
                     <strong id="txt-yape-monto">S/. 0.00</strong>
-                    <small>Verifica el sonido o aviso en tu celular y confirma.</small>
+                    <small>Verifica el abono en el celular del negocio y emite.</small>
                   </div>
                 </div>
               </div>
@@ -343,6 +343,7 @@
               <table class="data-table">
                 <thead>
                   <tr>
+                    <th>Fecha</th>
                     <th>Hora</th>
                     <th>N° Comprobante</th>
                     <th>Tipo</th>
@@ -362,7 +363,7 @@
           </div>
         </section>
 
-        <!-- 3. COMPROBANTES SUNAT -->
+        <!-- SECCIONES RESTANTES MODULARES -->
         <section id="vista-sunat" class="app-view">
           <div class="placeholder-card">
             <h3>Bandeja Electrónica SUNAT</h3>
@@ -370,7 +371,6 @@
           </div>
         </section>
 
-        <!-- 4. COTIZACIONES -->
         <section id="vista-proformas" class="app-view">
           <div class="placeholder-card">
             <h3>Cotizaciones y Proformas para Talleres</h3>
@@ -378,7 +378,6 @@
           </div>
         </section>
 
-        <!-- 5. CLIENTES Y TALLERES -->
         <section id="vista-clientes" class="app-view">
           <div class="placeholder-card">
             <h3>Directorio de Clientes y Talleres</h3>
@@ -386,7 +385,6 @@
           </div>
         </section>
 
-        <!-- 6. CUENTAS POR COBRAR (FIADOS) -->
         <section id="vista-fiados" class="app-view">
           <div class="placeholder-card">
             <h3>Cuentas por Cobrar (Créditos a Talleres)</h3>
@@ -394,7 +392,6 @@
           </div>
         </section>
 
-        <!-- 7. CATÁLOGO DE REPUESTOS -->
         <section id="vista-repuestos" class="app-view">
           <div class="placeholder-card">
             <h3>Catálogo Maestro de Autopartes</h3>
@@ -402,7 +399,6 @@
           </div>
         </section>
 
-        <!-- 8. GARANTÍA DE BATERÍAS -->
         <section id="vista-garantias" class="app-view">
           <div class="placeholder-card">
             <h3>Módulo de Garantía de Baterías</h3>
@@ -410,7 +406,6 @@
           </div>
         </section>
 
-        <!-- 9. UBICACIÓN EN TIENDA -->
         <section id="vista-ubicacion" class="app-view">
           <div class="placeholder-card">
             <h3>Ubicación en Tienda (Pasillo / Estante / Gaveta)</h3>
@@ -418,7 +413,6 @@
           </div>
         </section>
 
-        <!-- 10. REPUESTOS POR AGOTARSE -->
         <section id="vista-por-agotarse" class="app-view">
           <div class="placeholder-card">
             <h3>Alertas de Reposición Urgente</h3>
@@ -426,7 +420,6 @@
           </div>
         </section>
 
-        <!-- 11. ENTRADA DE MERCADERÍA -->
         <section id="vista-compras" class="app-view">
           <div class="placeholder-card">
             <h3>Llegada de Mercadería</h3>
@@ -434,7 +427,6 @@
           </div>
         </section>
 
-        <!-- 12. MIS PROVEEDORES -->
         <section id="vista-proveedores" class="app-view">
           <div class="placeholder-card">
             <h3>Directorio de Proveedores y Distribuidores</h3>
@@ -442,7 +434,6 @@
           </div>
         </section>
 
-        <!-- 13. APERTURA Y CIERRE DE CAJA -->
         <section id="vista-caja-cierre" class="app-view">
           <div class="placeholder-card">
             <h3>Apertura y Cierre de Turno</h3>
@@ -450,7 +441,6 @@
           </div>
         </section>
 
-        <!-- 14. GASTOS EN CAJA -->
         <section id="vista-caja-gastos" class="app-view">
           <div class="placeholder-card">
             <h3>Salidas de Dinero de Caja</h3>
@@ -458,7 +448,6 @@
           </div>
         </section>
 
-        <!-- 15. GANANCIAS -->
         <section id="vista-ganancias" class="app-view">
           <div class="placeholder-card">
             <h3>Reporte de Utilidad y Rentabilidad</h3>
@@ -466,7 +455,6 @@
           </div>
         </section>
 
-        <!-- 16. LOS MÁS VENDIDOS -->
         <section id="vista-mas-vendidos" class="app-view">
           <div class="placeholder-card">
             <h3>Ranking de Rotación de Piezas</h3>
@@ -477,6 +465,32 @@
       </div>
     </main>
 
+  </div>
+
+  <!-- MODAL DE VISUALIZACIÓN / IMPRESIÓN COMPROBANTE OFICIAL SUNAT (80MM / A4) -->
+  <div class="receipt-modal-backdrop" id="modal-comprobante">
+    <div class="receipt-modal-box">
+      <div class="receipt-modal-header">
+        <span id="ticket-modal-titulo">Comprobante de Pago Electrónico</span>
+        <button class="receipt-close-btn" onclick="cerrarModalComprobante()">✕</button>
+      </div>
+
+      <div class="receipt-paper-body" id="ticket-imprimible">
+        <!-- Contenido generado dinámicamente con app.js -->
+      </div>
+
+      <div class="receipt-footer-actions">
+        <button class="btn-print-receipt" onclick="imprimirTicketDirecto()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Imprimir Térmica (80mm)
+        </button>
+        <button class="btn-close-receipt" onclick="cerrarModalComprobante()">Cerrar</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

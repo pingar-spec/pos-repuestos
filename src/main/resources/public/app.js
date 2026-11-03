@@ -11,14 +11,13 @@ let correlativoBoleta = 1;
 let correlativoFactura = 1;
 
 // ===================================================
-// INICIALIZACIÓN AL ABRIR LA PÁGINA
+// INICIALIZACIÓN
 // ===================================================
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductosDesdeBackend();
   actualizarTablaVentas();
 });
 
-// Cambiar de sección en el menú lateral
 function cambiarVista(vistaId, tituloSeccion, elementoBoton) {
   document.querySelectorAll('.app-view').forEach(vista => vista.classList.remove('active-view'));
   const vistaSeleccionada = document.getElementById(vistaId);
@@ -83,9 +82,6 @@ function asignarIconoSegunTexto(nombre) {
   return 'amortiguador';
 }
 
-// ===================================================
-// RENDERIZADO DEL CATÁLOGO DE PRODUCTOS
-// ===================================================
 function renderizarCatalogo(lista) {
   const grid = document.getElementById('grid-productos');
   if (!grid) return;
@@ -140,9 +136,6 @@ function obtenerSvgPorTipo(tipo) {
   }
 }
 
-// ===================================================
-// FILTROS Y BÚSQUEDA
-// ===================================================
 function filtrarCategoria(cat, elementoBoton) {
   categoriaFiltroActiva = cat;
   document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
@@ -168,9 +161,6 @@ function aplicarFiltros() {
   renderizarCatalogo(filtrados);
 }
 
-// ===================================================
-// GESTIÓN DEL COMPROBANTE Y CARRITO (CÁLCULO IGV)
-// ===================================================
 function agregarAlCarrito(productoId) {
   const producto = catalogoProductos.find(p => p.id === productoId);
   if (!producto) return;
@@ -267,9 +257,6 @@ function actualizarVistaCarrito() {
   calcularVueltoDirecto();
 }
 
-// ===================================================
-// CONTROL DE PAGO DIRECTO (EFECTIVO Y YAPE)
-// ===================================================
 function cambiarMetodoCobro(metodo) {
   metodoPagoSeleccionado = metodo;
   const btnE = document.getElementById('btn-pay-efectivo');
@@ -311,9 +298,6 @@ function calcularVueltoDirecto() {
   }
 }
 
-// ===================================================
-// INTERACCIÓN DE FACTURACIÓN SUNAT
-// ===================================================
 function seleccionarTipoDoc(tipo) {
   tipoDocumentoSeleccionado = tipo;
   const btnB = document.getElementById('btn-boleta');
@@ -360,7 +344,7 @@ function validarDocumento() {
 }
 
 // ===================================================
-// EMISIÓN FINAL DE COMPROBANTE Y REGISTRO EN VENTAS DEL DÍA
+// EMISIÓN FINAL DE COMPROBANTE SUNAT
 // ===================================================
 function procesarEmisionFinal() {
   if (carrito.length === 0) {
@@ -394,21 +378,30 @@ function procesarEmisionFinal() {
   }
 
   const ahora = new Date();
+  const dia = String(ahora.getDate()).padStart(2, '0');
+  const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+  const anio = ahora.getFullYear();
+  const fechaTexto = `${dia}/${mes}/${anio}`;
   const horaTexto = ahora.toTimeString().substring(0, 5);
   const doc = (document.getElementById('input-doc').value || '00000000').trim();
+  const placa = (document.getElementById('input-placa').value || '').trim();
 
-  // Guardar venta
-  historialVentas.unshift({
+  const nuevaVenta = {
+    fecha: fechaTexto,
     hora: horaTexto,
     numero: serieNumero,
     tipo: tipoDocumentoSeleccionado,
     cliente: cliente,
     documento: doc,
+    placa: placa,
     metodo: metodoPagoSeleccionado === 'EFECTIVO' ? 'Efectivo' : 'Yape',
-    total: total
-  });
+    items: JSON.parse(JSON.stringify(carrito)),
+    total: total,
+    subtotal: total / 1.18,
+    igv: total - (total / 1.18)
+  };
 
-  alert(`¡Comprobante emitido con éxito!\n\n${tipoDocumentoSeleccionado}: ${serieNumero}\nCliente: ${cliente}\nMétodo: ${metodoPagoSeleccionado}\nTotal Pagado: S/. ${total.toFixed(2)}\n\nRegistrado en caja y disponible en "Ventas del Día".`);
+  historialVentas.unshift(nuevaVenta);
 
   // Limpiar panel de venta
   carrito = [];
@@ -418,6 +411,136 @@ function procesarEmisionFinal() {
   document.getElementById('input-efectivo-recibido').value = '';
   actualizarVistaCarrito();
   actualizarTablaVentas();
+
+  // Abrir de inmediato el comprobante oficial en pantalla
+  mostrarTicketModal(nuevaVenta);
+}
+
+// ===================================================
+// VISUALIZACIÓN DE TICKET TÉRMICO / FACTURA SUNAT
+// ===================================================
+function mostrarTicketModal(venta) {
+  const modal = document.getElementById('modal-comprobante');
+  const contenedor = document.getElementById('ticket-imprimible');
+  const tituloModal = document.getElementById('ticket-modal-titulo');
+
+  if (!modal || !contenedor) return;
+
+  const esFactura = venta.tipo === 'FACTURA';
+  tituloModal.innerText = esFactura ? 'Factura Electrónica SUNAT' : 'Boleta de Venta Electrónica';
+
+  let itemsHtml = '';
+  venta.items.forEach(it => {
+    const totalItem = it.precio * it.cantidad;
+    itemsHtml += `
+      <tr>
+        <td>${it.cantidad}x</td>
+        <td>${it.nombre}</td>
+        <td style="text-align: right;">${it.precio.toFixed(2)}</td>
+        <td style="text-align: right; font-weight: bold;">${totalItem.toFixed(2)}</td>
+      </tr>
+    `;
+  });
+
+  contenedor.innerHTML = `
+    <div class="receipt-company-info">
+      <div class="receipt-company-title">AUTOPARTES & SERVICIOS PIERO</div>
+      <div>RUC: 20608549123</div>
+      <div>Av. Los Rosales 450 - El Agustino, Lima</div>
+      <div>Tel: 987 654 321</div>
+    </div>
+
+    <div class="receipt-box-doc">
+      ${esFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA'}<br>
+      ${venta.numero}
+    </div>
+
+    <div class="receipt-line">
+      <span>Fecha de Emisión:</span>
+      <strong>${venta.fecha}</strong>
+    </div>
+    <div class="receipt-line">
+      <span>Hora de Emisión:</span>
+      <strong>${venta.hora}</strong>
+    </div>
+    <div class="receipt-line">
+      <span>Cajero:</span>
+      <span>Piero Inga</span>
+    </div>
+    <div class="receipt-divider"></div>
+
+    <div class="receipt-line">
+      <span>${esFactura ? 'Razón Social:' : 'Cliente:'}</span>
+      <strong>${venta.cliente}</strong>
+    </div>
+    <div class="receipt-line">
+      <span>${esFactura ? 'RUC:' : 'DNI:'}</span>
+      <span>${venta.documento}</span>
+    </div>
+    ${venta.placa ? `
+    <div class="receipt-line">
+      <span>Placa Vehículo:</span>
+      <span>${venta.placa}</span>
+    </div>` : ''}
+    <div class="receipt-line">
+      <span>Forma de Pago:</span>
+      <strong>${venta.metodo.toUpperCase()} (Contado)</strong>
+    </div>
+
+    <div class="receipt-divider"></div>
+
+    <table class="receipt-item-table">
+      <thead>
+        <tr>
+          <th>Cant</th>
+          <th>Descripción</th>
+          <th style="text-align: right;">P.Unit</th>
+          <th style="text-align: right;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+      </tbody>
+    </table>
+
+    <div class="receipt-divider"></div>
+
+    <div class="receipt-line">
+      <span>Op. Gravada:</span>
+      <span>S/. ${venta.subtotal.toFixed(2)}</span>
+    </div>
+    <div class="receipt-line">
+      <span>I.G.V. (18%):</span>
+      <span>S/. ${venta.igv.toFixed(2)}</span>
+    </div>
+    <div class="receipt-line" style="font-size: 14px; margin-top: 4px;">
+      <strong>IMPORTE TOTAL:</strong>
+      <strong>S/. ${venta.total.toFixed(2)}</strong>
+    </div>
+
+    <div class="receipt-divider"></div>
+
+    <div class="receipt-qr-placeholder">
+      [ CÓDIGO QR<br>FISCAL SUNAT ]
+    </div>
+
+    <div style="text-align: center; font-size: 10px; color: #444; margin-top: 6px;">
+      Representación impresa de la ${esFactura ? 'Factura' : 'Boleta'} Electrónica.<br>
+      Autorizado mediante resolución SUNAT.<br>
+      ¡Gracias por su compra!
+    </div>
+  `;
+
+  modal.classList.add('active');
+}
+
+function cerrarModalComprobante() {
+  const modal = document.getElementById('modal-comprobante');
+  if (modal) modal.classList.remove('active');
+}
+
+function imprimirTicketDirecto() {
+  window.print();
 }
 
 // ===================================================
@@ -436,7 +559,7 @@ function actualizarTablaVentas() {
   if (historialVentas.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
           No hay comprobantes emitidos en el turno de hoy.
         </td>
       </tr>
@@ -451,6 +574,7 @@ function actualizarTablaVentas() {
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
+        <td>${v.fecha}</td>
         <td>${v.hora}</td>
         <td><strong>${v.numero}</strong></td>
         <td><span class="${badgeClass}">${v.tipo}</span></td>
@@ -459,13 +583,13 @@ function actualizarTablaVentas() {
         <td>${v.metodo}</td>
         <td><strong>S/. ${v.total.toFixed(2)}</strong></td>
         <td>
-          <button class="btn-action-table" onclick="reimprimirTicket('${v.numero}', '${v.cliente}', ${v.total.toFixed(2)}, '${v.metodo}')">
+          <button class="btn-action-table" onclick="reimprimirTicketPorNumero('${v.numero}')">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 6 2 18 2 18 9"></polyline>
               <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
               <rect x="6" y="14" width="12" height="8"></rect>
             </svg>
-            Ticket
+            Comprobante
           </button>
         </td>
       `;
@@ -484,6 +608,9 @@ function actualizarTablaVentas() {
   if (elCant) elCant.innerText = `${historialVentas.length} Venta${historialVentas.length === 1 ? '' : 's'} emitida${historialVentas.length === 1 ? '' : 's'}`;
 }
 
-function reimprimirTicket(numero, cliente, total, metodo) {
-  alert(`=== REIMPRESIÓN TICKET TÉRMICO 80MM ===\nComprobante: ${numero}\nCliente: ${cliente}\nMétodo: ${metodo || 'Efectivo'}\nTotal: S/. ${parseFloat(total).toFixed(2)}\nEstado: EMITIDO Y DECLARADO`);
+function reimprimirTicketPorNumero(numero) {
+  const venta = historialVentas.find(v => v.numero === numero);
+  if (venta) {
+    mostrarTicketModal(venta);
+  }
 }
